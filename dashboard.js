@@ -22,6 +22,20 @@
     if (isWindowsStorePwa) document.documentElement.classList.add("windows-store-pwa");
     document.documentElement.classList.add(isNativeLifeTrackApp ? "native-lifetrack-app" : "web-lifetrack-app");
 
+    // Check for Google OAuth hash callback on dashboard.html
+    if (window.location.hash && window.location.hash.includes("access_token=")) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashToken = hashParams.get("access_token");
+        const hashExp = Number(hashParams.get("expires_in")) || 3600;
+        if (hashToken) {
+            history.replaceState(null, "", window.location.pathname + window.location.search);
+            sessionStorage.setItem("lifetrack-drive-token", JSON.stringify({
+                token: hashToken,
+                exp: Date.now() + hashExp * 1000
+            }));
+        }
+    }
+
     const currentUser = JSON.parse(localStorage.getItem("lifetrack-user") || "null");
     if (!currentUser || !currentUser.name) {
         window.location.href = "index.html";
@@ -3940,32 +3954,39 @@
         if (persistentGoogleRefresh) return persistentGoogleRefresh;
 
         persistentGoogleRefresh = (async () => {
-            const response = await fetch("/api/auth/session", {
-                credentials: "same-origin",
-                cache: "no-store"
-            });
-            if (response.status === 401) {
-                sessionStorage.removeItem("lifetrack-drive-token");
+            try {
+                const response = await fetch("/api/auth/session", {
+                    credentials: "same-origin",
+                    cache: "no-store"
+                });
+                if (response.status === 401) {
+                    sessionStorage.removeItem("lifetrack-drive-token");
+                    sessionStorage.removeItem("lifetrack-gtoken");
+                    setFitStatus("Google Drive sync needs reconnecting. Your LifeTrack account is still signed in; choose Reconnect Google sync from the profile menu.", "warn");
+                    return false;
+                }
+                if (!response.ok) {
+                    // On local server or static host without /api/auth/session:
+                    return Boolean(existingToken);
+                }
+                const session = await response.json();
+                if (!session.user || session.user.uid !== currentUser.uid || !session.accessToken) {
+                    throw new Error("The saved Google session belongs to a different LifeTrack account. Reconnect Google sync from the profile menu.");
+                }
+                const scopes = new Set(Array.isArray(session.scopes) ? session.scopes : []);
+                if (!scopes.has("https://www.googleapis.com/auth/drive.appdata")) {
+                    sessionStorage.removeItem("lifetrack-drive-token");
+                    sessionStorage.removeItem("lifetrack-gtoken");
+                    setFitStatus("Allow Google Drive app-data access to resume secure syncing.", "warn");
+                    return false;
+                }
+                const expiry = Date.now() + Math.max(30, Number(session.expiresIn || 3600) - 60) * 1000;
+                sessionStorage.setItem("lifetrack-drive-token", JSON.stringify({ token: session.accessToken, exp: expiry }));
                 sessionStorage.removeItem("lifetrack-gtoken");
-                setFitStatus("Google Drive sync needs reconnecting. Your LifeTrack account is still signed in; choose Reconnect Google sync from the profile menu.", "warn");
-                return false;
+                return true;
+            } catch (err) {
+                return Boolean(existingToken);
             }
-            if (!response.ok) throw new Error(`Could not refresh the Google session (HTTP ${response.status}).`);
-            const session = await response.json();
-            if (!session.user || session.user.uid !== currentUser.uid || !session.accessToken) {
-                throw new Error("The saved Google session belongs to a different LifeTrack account. Reconnect Google sync from the profile menu.");
-            }
-            const scopes = new Set(Array.isArray(session.scopes) ? session.scopes : []);
-            if (!scopes.has("https://www.googleapis.com/auth/drive.appdata")) {
-                sessionStorage.removeItem("lifetrack-drive-token");
-                sessionStorage.removeItem("lifetrack-gtoken");
-                setFitStatus("Allow Google Drive app-data access to resume secure syncing.", "warn");
-                return false;
-            }
-            const expiry = Date.now() + Math.max(30, Number(session.expiresIn || 3600) - 60) * 1000;
-            sessionStorage.setItem("lifetrack-drive-token", JSON.stringify({ token: session.accessToken, exp: expiry }));
-            sessionStorage.removeItem("lifetrack-gtoken");
-            return true;
         })();
         try {
             return await persistentGoogleRefresh;
@@ -3976,10 +3997,49 @@
 
     function reconnectGoogleSync() {
         if (location.protocol === "file:") {
-            toast("Google sync can only reconnect from the hosted HTTPS LifeTrack site.");
+            toast("Google sync can only reconnect from an HTTP/HTTPS site.");
             return;
         }
-        window.location.assign("/api/auth/google/start?returnTo=dashboard.html");
+        const clientGID = (window.LT_CONFIG && window.LT_CONFIG.GOOGLE_CLIENT_ID) || "";
+        if (window.google && window.google.accounts && window.google.accounts.oauth2 && clientGID) {
+            try {
+                const tokenClient = window.google.accounts.oauth2.initTokenClient({
+                    client_id: clientGID,
+                    scope: "openid email profile https://www.googleapis.com/auth/drive.appdata",
+                    callback: (tokenResponse) => {
+                        if (tokenResponse.access_token) {
+                            sessionStorage.setItem("lifetrack-drive-token", JSON.stringify({
+                                token: tokenResponse.access_token,
+                                exp: Date.now() + (Number(tokenResponse.expires_in) || 3600) * 1000
+                            }));
+                            toast("Google Drive sync reconnected!");
+                            if (typeof syncCloud === "function") void syncCloud();
+                        } else if (tokenResponse.error) {
+                            toast("Google reconnect error: " + tokenResponse.error);
+                        }
+                    }
+                });
+                tokenClient.requestAccessToken({ prompt: "select_account" });
+                return;
+            } catch (e) {
+                console.warn("GIS token client error:", e);
+            }
+        }
+        if (location.origin === "https://lifetrack.surajshukla22051.workers.dev") {
+            window.location.assign("/api/auth/google/start?returnTo=dashboard.html");
+            return;
+        }
+        if (clientGID) {
+            const redirectUri = window.location.origin + window.location.pathname;
+            const authUrl = "https://accounts.google.com/o/oauth2/v2/auth?" + new URLSearchParams({
+                client_id: clientGID,
+                redirect_uri: redirectUri,
+                response_type: "token",
+                scope: "openid email profile https://www.googleapis.com/auth/drive.appdata",
+                prompt: "select_account"
+            }).toString();
+            window.location.assign(authUrl);
+        }
     }
 
     function mergeReadingPlans(localPlan, remotePlan) {
