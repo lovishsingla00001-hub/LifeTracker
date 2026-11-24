@@ -497,7 +497,7 @@ https://developer.apple.com/programs/enroll/. After enrollment:
 
 LifeTrack remembers the signed-in account name and email in this browser and
 opens the dashboard automatically after refreshes and browser restarts. This
-local app session lasts until you choose **Log out** or clear this site's
+local app session lasts until you choose "Log out" or clear this site's
 browser data. The profile menu shows which account is remembered and offers
 **Switch account** and **Log out** actions.
 
@@ -521,7 +521,7 @@ available health readings into Fitness Today; device health readings are
 read-only in the dashboard. The workout plan has a Start/Stop/Save exercise
 timer; saved minutes sync as fitness data, reset for each new day, and appear
 in daily and yearly Fitness trends. Focus progress is shown against a
-30-minute daily target and counts only completed LifeTrack **Focus Session**
+30-minute daily target and counts only completed LifeTrack "Focus Session"
 minutes; Android app usage is not treated as Focus. The timer works on both
 Android and PC, restores running or paused sessions after a reload, and syncs
 completed sessions through Google Drive. Android's separate Device Focus
