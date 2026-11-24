@@ -225,6 +225,132 @@
             const isDarkAuth = savedAuthTheme ? (savedAuthTheme === "dark" || (savedAuthTheme === "system" && prefersDarkAuth)) : true;
             setTheme(isDarkAuth);
 
+            const CFG = window.LT_CONFIG || {};
+            const GID = CFG.GOOGLE_CLIENT_ID || "";
+            const gReady = /^[0-9]+-.+\.apps\.googleusercontent\.com$/.test(GID);
+
+            function showError(text) {
+                const box = document.getElementById("authError");
+                if (box) {
+                    box.textContent = text;
+                    box.classList.add("show");
+                }
+            }
+
+            function loginWithGoogleProfile(profile, accessToken, expiresIn) {
+                const cleanName = (profile.name || profile.given_name || (profile.email ? profile.email.split("@")[0] : "Google User")).trim();
+                const user = {
+                    name: cleanName,
+                    email: (profile.email || "").trim(),
+                    provider: "google",
+                    uid: "g_" + (profile.sub || profile.id || Date.now()),
+                    picture: profile.picture || ""
+                };
+                if (accessToken) {
+                    sessionStorage.setItem("lifetrack-drive-token", JSON.stringify({
+                        token: accessToken,
+                        exp: Date.now() + (Number(expiresIn) || 3600) * 1000
+                    }));
+                }
+                localStorage.setItem("lifetrack-user", JSON.stringify(user));
+                const rememberEl = document.getElementById("authRemember");
+                if (rememberEl && rememberEl.checked) {
+                    localStorage.setItem("lifetrack-remember-name", cleanName);
+                } else {
+                    localStorage.removeItem("lifetrack-remember-name");
+                }
+                window.location.replace("dashboard.html");
+            }
+
+            function launchGoogleOAuthRedirect(withDriveScope) {
+                const scopes = withDriveScope
+                    ? "openid email profile https://www.googleapis.com/auth/drive.appdata"
+                    : "openid email profile";
+                const redirectUri = window.location.origin + window.location.pathname;
+                const authUrl = "https://accounts.google.com/o/oauth2/v2/auth?" + new URLSearchParams({
+                    client_id: GID,
+                    redirect_uri: redirectUri,
+                    response_type: "token",
+                    scope: scopes,
+                    prompt: "select_account"
+                }).toString();
+                window.location.assign(authUrl);
+            }
+
+            function tryGoogleIdentityServices() {
+                if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) return false;
+                try {
+                    const tokenClient = window.google.accounts.oauth2.initTokenClient({
+                        client_id: GID,
+                        scope: "openid email profile https://www.googleapis.com/auth/drive.appdata",
+                        error_callback: (err) => {
+                            console.warn("GIS token error:", err);
+                            if (err && err.type === "popup_failed_to_open") {
+                                showError("Popup was blocked by your browser. Redirecting to Google login…");
+                                launchGoogleOAuthRedirect(true);
+                            }
+                        },
+                        callback: async (tokenResponse) => {
+                            if (tokenResponse.error) {
+                                console.warn("Google OAuth error:", tokenResponse.error);
+                                if (tokenResponse.error === "access_denied" || tokenResponse.error === "invalid_scope") {
+                                    // Retry with basic profile if drive.appdata was denied (e.g. unverified app in testing)
+                                    if (tryGoogleIdentityServicesBasic()) return;
+                                    launchGoogleOAuthRedirect(false);
+                                    return;
+                                }
+                                showError("Google sign-in could not be completed: " + (tokenResponse.error_description || tokenResponse.error));
+                                return;
+                            }
+                            if (!tokenResponse.access_token) {
+                                showError("Google did not return an access token. Please try again.");
+                                return;
+                            }
+                            try {
+                                const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+                                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                                });
+                                if (!res.ok) throw new Error("Could not retrieve account details from Google.");
+                                const profile = await res.json();
+                                loginWithGoogleProfile(profile, tokenResponse.access_token, tokenResponse.expires_in);
+                            } catch (err) {
+                                showError("Could not retrieve your Google profile: " + err.message);
+                            }
+                        }
+                    });
+                    tokenClient.requestAccessToken({ prompt: "select_account" });
+                    return true;
+                } catch (e) {
+                    console.warn("GIS tokenClient init failed, falling back:", e);
+                    return false;
+                }
+            }
+
+            function tryGoogleIdentityServicesBasic() {
+                if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) return false;
+                try {
+                    const basicClient = window.google.accounts.oauth2.initTokenClient({
+                        client_id: GID,
+                        scope: "openid email profile",
+                        callback: async (res) => {
+                            if (res.error || !res.access_token) {
+                                showError("Google sign-in could not be completed: " + (res.error || "access denied"));
+                                return;
+                            }
+                            const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+                                headers: { Authorization: `Bearer ${res.access_token}` }
+                            });
+                            const prof = await r.json();
+                            loginWithGoogleProfile(prof, res.access_token, res.expires_in);
+                        }
+                    });
+                    basicClient.requestAccessToken({ prompt: "select_account" });
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+
             const callbackError = document.getElementById("authError");
             const authQuery = new URLSearchParams(window.location.search);
             const googleErrors = {
@@ -242,8 +368,36 @@
                 authorization: "Apple sign-in could not be completed. Please try again."
             };
             if (authQuery.has("googleError")) {
-                callbackError.textContent = googleErrors[authQuery.get("googleError")] || "Google sign-in could not be completed. Please try again.";
-                callbackError.classList.add("show");
+                const gErr = authQuery.get("googleError");
+                if (gErr === "drive_scope") {
+                    callbackError.innerHTML = `
+                        <div style="font-weight:700; margin-bottom:6px; font-size:0.95rem;">Google Drive access was not approved</div>
+                        <div style="font-size:0.85rem; margin-bottom:12px; line-height:1.45; opacity:0.9;">
+                            Google Drive permission is used for optional cross-device backup. When prompted by Google, check the box for <em>"See, create, and delete its own configuration data in your Google Drive"</em>, or continue without Drive sync.
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <button type="button" id="retryDriveBtn" style="width:100%; padding:10px 14px; border-radius:8px; border:none; background:var(--primary); color:#fff; font-weight:600; cursor:pointer; font-size:0.875rem;">
+                                🔄 Try again (check the Drive permission box)
+                            </button>
+                            <button type="button" id="basicLoginBtn" style="width:100%; padding:9px 14px; border-radius:8px; border:1px solid var(--border); background:rgba(255,255,255,0.08); color:var(--text); font-weight:500; cursor:pointer; font-size:0.875rem;">
+                                ⚡ Sign in with Google without Drive sync
+                            </button>
+                        </div>
+                    `;
+                    callbackError.classList.add("show");
+                    setTimeout(() => {
+                        document.getElementById("retryDriveBtn")?.addEventListener("click", () => {
+                            launchGoogleOAuthRedirect(true);
+                        });
+                        document.getElementById("basicLoginBtn")?.addEventListener("click", () => {
+                            if (tryGoogleIdentityServicesBasic()) return;
+                            launchGoogleOAuthRedirect(false);
+                        });
+                    }, 0);
+                } else {
+                    callbackError.textContent = googleErrors[gErr] || "Google sign-in could not be completed. Please try again.";
+                    callbackError.classList.add("show");
+                }
             }
             if (authQuery.has("appleError")) {
                 callbackError.textContent = appleErrors[authQuery.get("appleError")] || "Apple sign-in could not be completed. Please try again.";
@@ -521,123 +675,7 @@
                 login("Guest", "", { uid: "guest" });
             });
 
-            // ---- Google sign-in: GIS popup, client OAuth, or Worker OAuth flow ----
-            const CFG = window.LT_CONFIG || {};
-            const GID = CFG.GOOGLE_CLIENT_ID || "";
-            const gReady = /^[0-9]+-.+\.apps\.googleusercontent\.com$/.test(GID);
-
-            function showError(text) {
-                errorBox.textContent = text;
-                errorBox.classList.add("show");
-            }
-
-            function loginWithGoogleProfile(profile, accessToken, expiresIn) {
-                const cleanName = (profile.name || profile.given_name || (profile.email ? profile.email.split("@")[0] : "Google User")).trim();
-                const user = {
-                    name: cleanName,
-                    email: (profile.email || "").trim(),
-                    provider: "google",
-                    uid: "g_" + (profile.sub || profile.id || Date.now()),
-                    picture: profile.picture || ""
-                };
-                if (accessToken) {
-                    sessionStorage.setItem("lifetrack-drive-token", JSON.stringify({
-                        token: accessToken,
-                        exp: Date.now() + (Number(expiresIn) || 3600) * 1000
-                    }));
-                }
-                localStorage.setItem("lifetrack-user", JSON.stringify(user));
-                if (document.getElementById("authRemember").checked) {
-                    localStorage.setItem("lifetrack-remember-name", cleanName);
-                } else {
-                    localStorage.removeItem("lifetrack-remember-name");
-                }
-                window.location.replace("dashboard.html");
-            }
-
-            function launchGoogleOAuthRedirect(withDriveScope) {
-                const scopes = withDriveScope
-                    ? "openid email profile https://www.googleapis.com/auth/drive.appdata"
-                    : "openid email profile";
-                const redirectUri = window.location.origin + window.location.pathname;
-                const authUrl = "https://accounts.google.com/o/oauth2/v2/auth?" + new URLSearchParams({
-                    client_id: GID,
-                    redirect_uri: redirectUri,
-                    response_type: "token",
-                    scope: scopes,
-                    prompt: "select_account"
-                }).toString();
-                window.location.assign(authUrl);
-            }
-
-            function tryGoogleIdentityServices() {
-                if (!window.google || !window.google.accounts || !window.google.accounts.oauth2) return false;
-                try {
-                    const tokenClient = window.google.accounts.oauth2.initTokenClient({
-                        client_id: GID,
-                        scope: "openid email profile https://www.googleapis.com/auth/drive.appdata",
-                        error_callback: (err) => {
-                            console.warn("GIS token error:", err);
-                            if (err && err.type === "popup_failed_to_open") {
-                                showError("Popup was blocked by your browser. Redirecting to Google login…");
-                                launchGoogleOAuthRedirect(true);
-                            }
-                        },
-                        callback: async (tokenResponse) => {
-                            if (tokenResponse.error) {
-                                console.warn("Google OAuth error:", tokenResponse.error);
-                                if (tokenResponse.error === "access_denied" || tokenResponse.error === "invalid_scope") {
-                                    // Retry with basic profile if drive.appdata was denied (e.g. unverified app in testing)
-                                    try {
-                                        const basicClient = window.google.accounts.oauth2.initTokenClient({
-                                            client_id: GID,
-                                            scope: "openid email profile",
-                                            callback: async (res2) => {
-                                                if (res2.error || !res2.access_token) {
-                                                    showError("Google sign-in could not be completed: " + (res2.error || "access denied"));
-                                                    return;
-                                                }
-                                                const r2 = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-                                                    headers: { Authorization: `Bearer ${res2.access_token}` }
-                                                });
-                                                const prof2 = await r2.json();
-                                                loginWithGoogleProfile(prof2, res2.access_token, res2.expires_in);
-                                            }
-                                        });
-                                        basicClient.requestAccessToken({ prompt: "select_account" });
-                                        return;
-                                    } catch (e2) {
-                                        launchGoogleOAuthRedirect(false);
-                                        return;
-                                    }
-                                }
-                                showError("Google sign-in could not be completed: " + (tokenResponse.error_description || tokenResponse.error));
-                                return;
-                            }
-                            if (!tokenResponse.access_token) {
-                                showError("Google did not return an access token. Please try again.");
-                                return;
-                            }
-                            try {
-                                const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-                                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-                                });
-                                if (!res.ok) throw new Error("Could not retrieve account details from Google.");
-                                const profile = await res.json();
-                                loginWithGoogleProfile(profile, tokenResponse.access_token, tokenResponse.expires_in);
-                            } catch (err) {
-                                showError("Could not retrieve your Google profile: " + err.message);
-                            }
-                        }
-                    });
-                    tokenClient.requestAccessToken({ prompt: "select_account" });
-                    return true;
-                } catch (e) {
-                    console.warn("GIS tokenClient init failed, falling back:", e);
-                    return false;
-                }
-            }
-
+            // ---- Google sign-in ----
             document.getElementById("googleBtn").addEventListener("click", (event) => {
                 event.preventDefault();
                 if (window.LifeTrackNativeReminders && window.LifeTrackNativeReminders.isNativeApp()) {
@@ -662,13 +700,7 @@
                     return;
                 }
 
-                // 2. If hosted on Cloudflare Worker origin, use Worker backend OAuth endpoint
-                if (location.origin === "https://lifetrack.surajshukla22051.workers.dev") {
-                    window.location.assign("/api/auth/google/start?returnTo=index.html");
-                    return;
-                }
-
-                // 3. Direct client-side OAuth 2.0 redirect fallback (works on localhost, preview, and static hosting)
+                // 2. Direct client-side OAuth 2.0 redirect fallback (works everywhere, resilient to scope unchecking)
                 launchGoogleOAuthRedirect(true);
             });
 
