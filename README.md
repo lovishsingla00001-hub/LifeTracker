@@ -37,9 +37,9 @@ We are **Team SONIC**, a four-member team working on LifeTrack.
 
 | Team Member | Role | Responsibilities |
 |---|---|---|
-| **Lovis** | Team Leader & Project Coordinator | Leads the team, plans tasks, coordinates development, and reviews overall project progress. |
+| **Lovish Singla** | Team Leader & Project Coordinator | Leads the team, plans tasks, coordinates development, and reviews overall project progress. |
 | **Ujjwal** | Testing & Documentation  | Tests app workflows, records bugs and feedback, and helps prepare project documentation. |
-| **Yashashvi** | UI/UX & Design| Works on screen layouts, visual consistency, usability, and interface improvements.  |
+| **Yashasvee Patel** | UI/UX & Design| Works on screen layouts, visual consistency, usability, and interface improvements.  |
 | **Suraj Shukla** | Development & Integration | Contributes to application development, feature integration, deployment support, and technical improvements. |
 
 *Roles are a proposed division of responsibilities. Update them if the team's actual contributions differ.*
