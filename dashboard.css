@@ -1,24 +1,25 @@
 :root {
-    --bg: #f1f3ff;
-    --panel: #ffffff;
-    --panel-soft: #f7f7ff;
-    --text: #20233e;
-    --muted: #666b88;
-    --line: #dfe1f2;
-    --primary: #5366df;
-    --primary-strong: #3e50c4;
-    --primary-glow: rgba(83, 102, 223, 0.16);
-    --accent: #a14fc7;
-    --accent-glow: rgba(161, 79, 199, 0.14);
-    --tertiary: #078f9b;
-    --tertiary-glow: rgba(7, 143, 155, 0.13);
-    --warm: #e47752;
-    --warm-glow: rgba(228, 119, 82, 0.13);
-    --track: #e6e8f7;
-    --rail: #f1f0ff;
-    --rail-text: #303253;
-    --rail-muted: #6b6c91;
-    --rail-active-glow: rgba(83, 102, 223, 0.15);
+    /* Dual-Mode Color Tokens: Raw Concrete & Cobalt (Column 3) */
+    --bg: #EBEBE3;
+    --panel: #F7F7F4;
+    --panel-soft: #EBEBE3;
+    --text: #111111;
+    --muted: #5C5C56;
+    --line: #D1D1C9;
+    --primary: #0044FF;
+    --primary-strong: #0044FF;
+    --primary-glow: rgba(0, 68, 255, 0.16);
+    --accent: #FF4D00;
+    --accent-glow: rgba(255, 77, 0, 0.14);
+    --tertiary: #0044FF;
+    --tertiary-glow: rgba(0, 68, 255, 0.13);
+    --warm: #FF4D00;
+    --warm-glow: rgba(255, 77, 0, 0.13);
+    --track: #D1D1C9;
+    --rail: #F7F7F4;
+    --rail-text: #111111;
+    --rail-muted: #5C5C56;
+    --rail-active-glow: rgba(0, 68, 255, 0.15);
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --sidebar-closed: 68px;
     --sidebar-open: 240px;
@@ -131,28 +132,28 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* ---------- Dark mode: shiny blue-black ---------- */
+/* ---------- Dark mode: Editorial Luxury (Column 5) ---------- */
 body.dark {
-    --bg: #05070c;
-    --panel: #0c1018;
-    --panel-soft: #121a27;
-    --text: #edf2fb;
-    --muted: #9aa9bf;
-    --line: #293447;
-    --primary: #75a5ff;
-    --primary-strong: #a8c5ff;
-    --primary-glow: rgba(91, 142, 255, 0.42);
-    --accent: #b69aff;
-    --accent-glow: rgba(160, 123, 255, 0.30);
-    --tertiary: #52c7ff;
-    --tertiary-glow: rgba(58, 183, 255, 0.25);
-    --warm: #ff9a79;
-    --warm-glow: rgba(255, 126, 97, 0.24);
-    --track: #1c2635;
-    --rail: #02040a;
-    --rail-text: #f1f5fb;
-    --rail-muted: #97a8c2;
-    --rail-active-glow: rgba(78, 130, 255, 0.34);
+    --bg: #131110;
+    --panel: #1C1A18;
+    --panel-soft: #131110;
+    --text: #FAF8F5;
+    --muted: #9C958E;
+    --line: #2E2B28;
+    --primary: #E05A47;
+    --primary-strong: #E05A47;
+    --primary-glow: rgba(224, 90, 71, 0.28);
+    --accent: #D4AF37;
+    --accent-glow: rgba(212, 175, 55, 0.22);
+    --tertiary: #D4AF37;
+    --tertiary-glow: rgba(212, 175, 55, 0.20);
+    --warm: #E05A47;
+    --warm-glow: rgba(224, 90, 71, 0.22);
+    --track: #2E2B28;
+    --rail: #131110;
+    --rail-text: #FAF8F5;
+    --rail-muted: #9C958E;
+    --rail-active-glow: rgba(224, 90, 71, 0.25);
 }
 
 body.dark .sidebar {
