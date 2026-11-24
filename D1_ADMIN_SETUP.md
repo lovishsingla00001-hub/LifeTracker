@@ -11,6 +11,12 @@ backfills existing password-account records using their PBKDF2 salt and hash;
 plaintext passwords are never stored. Existing Google and Apple users are
 registered on their next successful sign-in.
 
+Migration `worker/migrations/0009_friend_challenges.sql` adds opt-in friend
+discovery, friend requests, presence, 90-day group matches, and daily aggregate
+progress. Progress is visible only to accepted match members who remain
+friends. Disabling sharing deletes that user's stored match metrics. No habit
+names, body details, or raw tracker history are sent to the Worker.
+
 ## Local test
 
 Run these commands from the `worker` directory. Wrangler uses local SQLite/KV
@@ -18,7 +24,7 @@ storage here; `--local` does not read or modify the production D1 database:
 
 ```powershell
 npx wrangler d1 migrations apply lifetrack-monetization --local --config wrangler.toml
-node --test index.test.mjs user-admin.test.mjs
+node --test index.test.mjs user-admin.test.mjs friends.test.mjs
 npm run dev:local
 ```
 

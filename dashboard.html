@@ -38,7 +38,7 @@
     <script src="pwa.js" defer></script>
     <link rel="icon" type="image/png" href="lifetrack-logo.png?v=2" sizes="120x120" media="(prefers-color-scheme: light)" data-theme-icon="light">
     <link rel="icon" type="image/png" href="lifetrack-logo-dark.png?v=2" sizes="120x120" media="(prefers-color-scheme: dark)" data-theme-icon="dark">
-    <link rel="stylesheet" href="dashboard.css?v=84">
+    <link rel="stylesheet" href="dashboard.css?v=88">
 </head>
 <body>
 <div id="pullRefreshIndicator" class="pull-refresh-indicator" role="status" aria-live="polite" aria-hidden="true">
@@ -58,16 +58,9 @@
             <button type="button" class="nav-item" data-section="habits" title="Habits"><span class="nav-icon">✓</span><span class="nav-text">Habits</span></button>
             <button type="button" class="nav-item" data-section="goals" title="Goals"><span class="nav-icon">🎯</span><span class="nav-text">Goals</span></button>
             <button type="button" class="nav-item" data-section="analytics" title="Analytics"><span class="nav-icon">📈</span><span class="nav-text">Analytics</span></button>
+            <button type="button" class="nav-item" data-section="friends" title="Friends"><span class="nav-icon">🏆</span><span class="nav-text">Friends</span></button>
         </nav>
         <div class="sidebar-bottom">
-            <button type="button" id="supportSidebarTrigger" class="support-sidebar-trigger" aria-label="Voluntarily support LifeTrack">
-                <span class="support-sidebar-icon" aria-hidden="true">₹</span>
-                <span class="support-sidebar-copy">
-                    <span class="support-sidebar-kicker">OPTIONAL SUPPORT</span>
-                    <strong>Support LifeTrack</strong>
-                    <span>Buy Me a Coffee · Always voluntary</span>
-                </span>
-            </button>
             <button type="button" id="themeToggle" class="theme-button" aria-pressed="true" title="Change appearance"><span class="nav-icon">☀</span><span class="nav-text">Light Mode</span></button>
         </div>
     </aside>
@@ -294,6 +287,7 @@
                         <div class="focus-session-main"><output id="focusClock" class="focus-clock" aria-live="polite">25:00</output><div class="focus-length" title="Choose a duration from 1 minute to 24 hours"><label><input id="focusHours" type="number" min="0" max="24" step="1" value="0" inputmode="numeric" aria-label="Focus duration hours"><span>hr</span></label><b aria-hidden="true">:</b><label><input id="focusMinutes" type="number" min="0" max="59" step="1" value="25" inputmode="numeric" aria-label="Focus duration minutes"><span>min</span></label></div></div>
                         <div class="focus-session-actions"><button type="button" class="primary-button" id="focusToggle">Start</button><button type="button" class="secondary-button" id="focusReset">Reset</button></div>
                         <small id="focusSummary" class="focus-summary">0 sessions · 0 minutes focused today</small>
+                        <small id="focusLockMessage" class="focus-lock-message" hidden></small>
                     </div>
                 </div>
 
@@ -458,6 +452,69 @@
                 </div>
             </div>
         </section>
+
+        <section id="friends" class="section">
+            <div class="page-card">
+                <span class="eyebrow">FRIENDS · 90-DAY MATCH</span>
+                <h2>Build a friendly challenge</h2>
+                <p>Find friends who opted in, see online/offline status, and invite accepted friends into a 90-day group match. Both accounts need to be signed in on the same hosted Worker, and each person must enable sharing. Localhost databases are separate on each computer. The match starts when you create it; friends who accept later are scored from the day they join.</p>
+                <div class="friend-privacy-note">
+                    Only your daily Life Score, habit completion %, focus minutes, streak days, and steps are shared with friends who accept the same match. Habit names, body details, and raw tracker history are not shared. Turning sharing off removes your saved match metrics.
+                </div>
+                <label class="friend-sharing-toggle">
+                    <input type="checkbox" id="friendSharingToggle">
+                    <span>Let friends find me and share these match metrics</span>
+                </label>
+                <p id="friendsStatus" class="friend-status" role="status" aria-live="polite">Sign in to use friends and group matches.</p>
+            </div>
+
+            <div id="friendsWorkspace" hidden>
+                <div class="duo-grid page-gap">
+                    <div class="page-card">
+                        <span class="eyebrow">FIND PEOPLE</span>
+                        <h2>Search friends</h2>
+                        <p>Search by name, or enter an exact email. Only opted-in accounts appear; email addresses are never shown.</p>
+                        <form id="friendSearchForm" class="friend-search-form">
+                            <input id="friendSearchInput" type="search" maxlength="100" placeholder="Name or exact email" autocomplete="off">
+                            <button type="submit" class="primary-button">Search</button>
+                        </form>
+                        <div id="friendSearchResults" class="friend-list" aria-live="polite"></div>
+                    </div>
+                    <div class="page-card">
+                        <span class="eyebrow">CONNECTIONS</span>
+                        <h2>Your friends</h2>
+                        <div id="friendList" class="friend-list"></div>
+                    </div>
+                </div>
+
+                <div class="duo-grid page-gap">
+                    <div class="page-card">
+                        <span class="eyebrow">REQUESTS</span>
+                        <h2>Friend requests</h2>
+                        <div id="friendRequests" class="friend-list"></div>
+                    </div>
+                    <div class="page-card">
+                        <span class="eyebrow">GROUP INVITATIONS</span>
+                        <h2>90-day match invites</h2>
+                        <div id="friendChallengeInvites" class="friend-list"></div>
+                    </div>
+                </div>
+
+                <div class="page-card page-gap">
+                    <span class="eyebrow">START A MATCH</span>
+                    <h2>Invite friends to compete</h2>
+                    <p>Choose 1–20 friends with sharing enabled. Their metrics stay private until they accept the match invite.</p>
+                    <div id="friendChallengeChoices" class="friend-choice-list"></div>
+                    <button type="button" id="createFriendChallenge" class="primary-button" disabled>Start 90-day group match</button>
+                </div>
+
+                <div class="page-card page-gap">
+                    <span class="eyebrow">YOUR MATCHES</span>
+                    <h2>Progress leaderboard</h2>
+                    <div id="friendChallenges" class="friend-challenges"></div>
+                </div>
+            </div>
+        </section>
     </main>
 </div>
 
@@ -544,7 +601,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script src="qrcode.js"></script>
-<script src="dashboard.js?v=130"></script>
+<script src="dashboard.js?v=135"></script>
 <script>
     if ("serviceWorker" in navigator && !window.LT_REDIRECTING && location.protocol !== "file:") {
         try {

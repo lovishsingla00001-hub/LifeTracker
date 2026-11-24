@@ -701,6 +701,10 @@
     let focusAlarmInterval = null;
     let focusAlarmTimeout = null;
     let focusSoundMuted = localStorage.getItem(`lifetrack:${currentUser.uid}:focus-sound-muted`) === "true";
+    let focusLockActive = false;
+    let focusLockPlaceholder = null;
+    let focusLockInertState = [];
+    let nativeFocusLockRequested = false;
 
     /* ===================== dates + lifetime progress ===================== */
 
@@ -2327,6 +2331,7 @@
         const clock = document.getElementById("focusClock");
         if (!clock) return;
         if (!focusTimerRestored) restoreFocusTimer();
+        setFocusLock(Boolean(focusEndsAt));
         const hours = Math.floor(focusRemaining / 3600);
         const minutes = Math.floor((focusRemaining % 3600) / 60);
         const seconds = focusRemaining % 60;
@@ -2351,8 +2356,89 @@
         if (focusDurationValid && !minutesInput.matches(":focus")) minutesInput.value = String(focusDuration % 60);
         const today = fitness[isoFromUTC(todayUTC())] || {};
         document.getElementById("focusSummary").textContent = `${today.focusSessions || 0} sessions · ${today.focusMinutes || 0} minutes focused today`;
+        const lockMessage = document.getElementById("focusLockMessage");
+        lockMessage.hidden = !focusEndsAt;
+        lockMessage.textContent = isNativeAndroidApp
+            ? typeof nativeAndroidBridge.startFocusLock === "function"
+                ? "Android app pinning limits switching when enabled. Android controls calls and notifications; they may still interrupt."
+                : "LifeTrack is locked. Update the Android app to enable device-wide screen pinning."
+            : "LifeTrack navigation is locked; other browser tabs and apps remain available.";
         updateNativeAdSuppression();
     }
+
+    function setFocusLock(active, requestDeviceLock = false) {
+        const focusSession = document.getElementById("focusSession");
+        if (active && !focusLockActive) {
+            focusLockPlaceholder = document.createComment("focus-session");
+            focusSession.parentNode.insertBefore(focusLockPlaceholder, focusSession);
+            document.body.appendChild(focusSession);
+            focusLockActive = true;
+            document.body.classList.add("focus-lock-active");
+            focusLockInertState = Array.from(document.body.children)
+                .filter((child) => child !== focusSession)
+                .map((child) => ({ element: child, inert: child.inert }));
+            focusLockInertState.forEach(({ element }) => { element.inert = true; });
+            document.getElementById("focusToggle").focus();
+        } else if (!active && focusLockActive) {
+            focusLockActive = false;
+            document.body.classList.remove("focus-lock-active");
+            focusLockInertState.forEach(({ element, inert }) => { element.inert = inert; });
+            focusLockInertState = [];
+            if (focusLockPlaceholder && focusLockPlaceholder.parentNode) {
+                focusLockPlaceholder.parentNode.insertBefore(focusSession, focusLockPlaceholder);
+                focusLockPlaceholder.remove();
+            }
+            focusLockPlaceholder = null;
+        }
+
+        if (active && requestDeviceLock && isNativeAndroidApp && !nativeFocusLockRequested) {
+            if (typeof nativeAndroidBridge.startFocusLock !== "function") {
+                toast("Update the LifeTrack Android app to enable device-wide screen pinning.");
+                return;
+            }
+            try {
+                nativeAndroidBridge.startFocusLock(Math.ceil(focusRemaining));
+                nativeFocusLockRequested = true;
+            } catch (error) {
+                console.error("LifeTrack could not start Android screen pinning.", error);
+                toast("Android could not pin LifeTrack. The in-app focus lock is still active.");
+            }
+        } else if (!active && nativeFocusLockRequested) {
+            nativeFocusLockRequested = false;
+            try {
+                if (typeof nativeAndroidBridge.stopFocusLock === "function") {
+                    nativeAndroidBridge.stopFocusLock();
+                }
+            } catch (error) {
+                console.error("LifeTrack could not stop Android screen pinning.", error);
+                toast("Android screen pinning may need to be exited using the system controls.");
+            }
+        }
+    }
+
+    document.addEventListener("keydown", (event) => {
+        if (!focusLockActive) return;
+        if (event.key === "Escape") {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+        if (event.key !== "Tab") return;
+        const controls = Array.from(document.getElementById("focusSession")
+            .querySelectorAll("button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex='-1'])"));
+        if (!controls.length) {
+            event.preventDefault();
+            return;
+        }
+        const index = controls.indexOf(document.activeElement);
+        if (index < 0 || event.shiftKey && index === 0) {
+            event.preventDefault();
+            controls[event.shiftKey ? controls.length - 1 : 0].focus();
+        } else if (!event.shiftKey && index === controls.length - 1) {
+            event.preventDefault();
+            controls[0].focus();
+        }
+    }, true);
 
     function normalizeFocusTimerState(timer, now = Date.now()) {
         if (!timer || typeof timer !== "object") return null;
@@ -5437,8 +5523,10 @@
             : `ai-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     }
 
-    function appendAIMessage(role, content) {
-        aiConversation.push({ id: assistantId(), createdAt: Date.now(), role, content });
+    function appendAIMessage(role, content, action = "") {
+        const message = { id: assistantId(), createdAt: Date.now(), role, content };
+        if (action) message.action = action;
+        aiConversation.push(message);
         aiConversation = aiConversation.slice(-AI_HISTORY_MESSAGE_LIMIT);
     }
 
@@ -5518,6 +5606,14 @@
             const bubble = document.createElement("div");
             bubble.className = `ai-message ${message.role === "user" ? "user" : "assistant"}`;
             bubble.textContent = message.content;
+            if (message.action === "sign-in") {
+                const signInButton = document.createElement("button");
+                signInButton.type = "button";
+                signInButton.className = "ai-auth-recovery";
+                signInButton.textContent = "Sign out and sign in again";
+                signInButton.addEventListener("click", () => { void doLogout(); });
+                bubble.appendChild(signInButton);
+            }
             container.appendChild(bubble);
         });
         scrollAIMessagesToLatest();
@@ -5900,7 +5996,11 @@
         } catch {
             throw new Error(`LifeTrack AI returned an invalid response (HTTP ${response.status}).`);
         }
-        if (!response.ok) throw new Error(data.error || `LifeTrack AI failed (HTTP ${response.status}).`);
+        if (!response.ok) {
+            const error = new Error(data.error || `LifeTrack AI failed (HTTP ${response.status}).`);
+            error.status = response.status;
+            throw error;
+        }
         return data;
     }
 
@@ -6026,6 +6126,7 @@
                     focusRemaining = focusDuration * 60;
                     focusEndsAt = Date.now() + focusRemaining * 1000;
                     focusInterval = setInterval(tickFocusTimer, 1000);
+                    setFocusLock(true, true);
                 } else if (action.action === "pause") {
                     focusRemaining = Math.max(0, Math.ceil((focusEndsAt - Date.now()) / 1000));
                     focusEndsAt = null;
@@ -6111,10 +6212,14 @@
                     ? `${data.aiUsage.remainingRequests} chats remain today.`
                     : ""}`;
         } catch (error) {
+            const authFailure = [401, 403].includes(error.status)
+                && /session|account has been deleted|account is suspended/i.test(error.message || "");
             const message = location.protocol === "file:"
                 ? "This dashboard is open as a local file, so the browser blocks its AI connection. Open the hosted HTTPS LifeTrack page to use the assistant."
-                : `LifeTrack AI unavailable: ${error.message}`;
-            appendAIMessage("assistant", message);
+                : authFailure
+                    ? `LifeTrack AI needs an active sign-in: ${error.message} Sign out and sign in with an active account.`
+                    : `LifeTrack AI unavailable: ${error.message}`;
+            appendAIMessage("assistant", message, authFailure ? "sign-in" : "");
             saveAssistantState("ai-conversation", aiConversation);
             renderAIMessages();
             voiceStatus.textContent = message;
@@ -6273,7 +6378,7 @@
     const aiPanel = document.getElementById("aiPanel");
     const aiPrompt = document.getElementById("aiPrompt");
     document.addEventListener("keydown", (event) => {
-        if (isNativeAndroidApp || !window.matchMedia("(min-width: 621px)").matches
+        if (focusLockActive || isNativeAndroidApp || !window.matchMedia("(min-width: 621px)").matches
             || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
             || event.repeat || event.defaultPrevented) return;
         const target = event.target;
@@ -6287,7 +6392,6 @@
             n: () => openAssistantView("notes"),
             r: () => openAssistantView("reminders"),
             i: () => openAssistantView("chat"),
-            m: () => supportSidebarTrigger.click(),
             p: () => userChip.click(),
             t: () => themeToggle.click()
         };
@@ -6303,7 +6407,6 @@
     }
 
     const aiInstallTrigger = document.getElementById("aiInstallTrigger");
-    const supportSidebarTrigger = document.getElementById("supportSidebarTrigger");
     const supportHeaderTrigger = document.getElementById("supportHeaderTrigger");
     const aiInstallMenu = document.getElementById("aiInstallMenu");
     const aiInstallStatus = document.getElementById("aiInstallStatus");
@@ -6313,7 +6416,6 @@
     if (isNativeLifeTrackApp) {
         aiInstallTrigger.hidden = true;
         supportHeaderTrigger.hidden = false;
-        supportSidebarTrigger.hidden = true;
     }
     supportHeaderTrigger.addEventListener("click", openSupportModal);
     aiInstallTrigger.addEventListener("click", () => {
@@ -7502,8 +7604,6 @@
             button.blur();
         });
     });
-    supportSidebarTrigger.addEventListener("click", openSupportModal);
-
     function handleDailyTaskClick(event) {
         const button = event.target.closest("[data-task-action]");
         if (!button) return;
@@ -7522,7 +7622,302 @@
     document.getElementById("todayTaskCard").addEventListener("click", handleDailyTaskClick);
     document.getElementById("dailyTaskDetail").addEventListener("click", handleDailyTaskClick);
 
+    let friendState = null;
+    let friendLoadInProgress = false;
+    let friendLastProgressSync = 0;
+
+    function setFriendsStatus(message, kind = "") {
+        const status = document.getElementById("friendsStatus");
+        status.textContent = message;
+        if (kind) status.dataset.kind = kind;
+        else delete status.dataset.kind;
+    }
+
+    async function friendApi(path, options = {}) {
+        const response = await fetch(path, {
+            credentials: "same-origin",
+            ...options,
+            headers: {
+                ...(options.body ? { "Content-Type": "application/json" } : {}),
+                ...(options.headers || {})
+            }
+        });
+        let data = {};
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+        if (!response.ok) {
+            const error = new Error(data.error || `Request failed (${response.status}).`);
+            error.status = response.status;
+            throw error;
+        }
+        return data;
+    }
+
+    function friendDailyMetrics() {
+        const today = isoFromUTC(todayUTC());
+        const life = computeLifetime();
+        const score = calculateWeightedLifeScore(lifeScoreCategoryValues(life), lifeScoreWeights).score;
+        const todayFitness = fitness[today] && typeof fitness[today] === "object" ? fitness[today] : {};
+        const streaks = buildContext(life).streaks;
+        const currentStreak = Object.values(streaks).reduce((max, streak) => Math.max(max, streak.cur), 0);
+        const todayDone = habits.reduce((count, habit) => count + (checks[keyFor(todayUTC(), habit)] ? 1 : 0), 0);
+        const focusMinutes = Number(todayFitness.focusMinutes) || 0;
+        const steps = Number(todayFitness.steps) || 0;
+        return {
+            date: today,
+            lifeScore: score,
+            habitRate: habits.length ? Math.round((todayDone / habits.length) * 100) : 0,
+            focusMinutes: clamp(Math.round(focusMinutes), 0, 1440),
+            streakDays: clamp(currentStreak, 0, 10000),
+            steps: clamp(Math.round(steps), 0, 100000)
+        };
+    }
+
+    async function syncFriendProgress(force = false) {
+        if (!friendState || !friendState.enabled || document.visibilityState !== "visible") return;
+        if (!force && Date.now() - friendLastProgressSync < 30 * 60_000) return;
+        try {
+            await friendApi("/api/friends/progress", {
+                method: "POST",
+                body: JSON.stringify(friendDailyMetrics())
+            });
+            friendLastProgressSync = Date.now();
+        } catch (error) {
+            console.error("Friend progress sync failed.", error);
+            setFriendsStatus(error.message, "error");
+        }
+    }
+
+    async function updateFriendPresence() {
+        if (!friendState || !friendState.enabled || document.visibilityState !== "visible") return;
+        try {
+            await friendApi("/api/friends/presence", { method: "POST", body: "{}" });
+        } catch (error) {
+            console.error("Friend presence update failed.", error);
+        }
+    }
+
+    function friendEmpty(message) {
+        return `<p class="friend-empty">${esc(message)}</p>`;
+    }
+
+    function renderFriendState(state) {
+        const sharingToggle = document.getElementById("friendSharingToggle");
+        const workspace = document.getElementById("friendsWorkspace");
+        sharingToggle.checked = state.enabled;
+        sharingToggle.disabled = false;
+        workspace.hidden = !state.enabled;
+        if (!state.enabled) {
+            setFriendsStatus("Enable sharing to appear in opted-in searches. Existing match metrics will be removed when you switch sharing off.", "");
+            return;
+        }
+
+        document.getElementById("friendList").innerHTML = state.friends.length
+            ? state.friends.map((friend) => `<div class="friend-row">
+                <div class="friend-row-copy"><strong>${esc(friend.name || "LifeTrack user")}</strong>
+                    <span class="friend-presence${friend.presence === "online" ? " is-online" : ""}">${friend.presence === "online" ? "Online" : "Offline"}${friend.sharingEnabled ? "" : " · sharing off"}</span>
+                </div>
+                <div class="friend-actions"><button type="button" class="friend-action is-danger" data-friend-remove="${esc(friend.user_id)}">Remove</button></div>
+            </div>`).join("")
+            : friendEmpty("No friends yet. Search for opted-in accounts above.");
+
+        const requestRows = [];
+        (state.incomingRequests || []).forEach((item) => {
+            requestRows.push(`<div class="friend-row"><div class="friend-row-copy"><strong>${esc(item.name || "LifeTrack user")}</strong><small>Wants to connect</small></div>
+                <div class="friend-actions"><button type="button" class="friend-action is-primary" data-request-id="${esc(item.id)}" data-request-action="accept">Accept</button><button type="button" class="friend-action" data-request-id="${esc(item.id)}" data-request-action="decline">Decline</button></div></div>`);
+        });
+        (state.outgoingRequests || []).forEach((item) => {
+            requestRows.push(`<div class="friend-row"><div class="friend-row-copy"><strong>${esc(item.name || "LifeTrack user")}</strong><small>Request sent · waiting for response</small></div></div>`);
+        });
+        document.getElementById("friendRequests").innerHTML = requestRows.join("") || friendEmpty("No pending friend requests.");
+
+        document.getElementById("friendChallengeInvites").innerHTML = state.challengeInvites.length
+            ? state.challengeInvites.map((invite) => `<div class="friend-row"><div class="friend-row-copy"><strong>${esc(invite.creator_name || "A friend")} invited you</strong><small>Join their 90-day group match</small></div>
+                <div class="friend-actions"><button type="button" class="friend-action is-primary" data-challenge-id="${esc(invite.id)}" data-challenge-action="accept">Accept</button><button type="button" class="friend-action" data-challenge-id="${esc(invite.id)}" data-challenge-action="decline">Decline</button></div></div>`).join("")
+            : friendEmpty("No match invitations.");
+
+        const eligibleFriends = state.friends.filter((friend) => friend.sharingEnabled);
+        document.getElementById("friendChallengeChoices").innerHTML = eligibleFriends.length
+            ? eligibleFriends.map((friend) => `<div class="friend-choice"><label><input type="checkbox" data-challenge-friend="${esc(friend.user_id)}"><span>${esc(friend.name || "LifeTrack user")}</span></label></div>`).join("")
+            : friendEmpty("Friends with sharing enabled will appear here.");
+        const updateCreateButton = () => {
+            document.getElementById("createFriendChallenge").disabled =
+                !document.querySelector('[data-challenge-friend]:checked');
+        };
+        document.getElementById("friendChallengeChoices").querySelectorAll("[data-challenge-friend]").forEach((checkbox) => {
+            checkbox.addEventListener("change", updateCreateButton);
+        });
+        updateCreateButton();
+
+        document.getElementById("friendChallenges").innerHTML = state.challenges.length
+            ? state.challenges.map((challenge) => {
+                const remaining = Math.max(0, Math.ceil((Date.parse(challenge.endsAt) - Date.now()) / 86_400_000));
+                const members = challenge.members.slice().sort((left, right) =>
+                    (right.averageLifeScore ?? -1) - (left.averageLifeScore ?? -1));
+                const rows = members.map((member, index) => `<div class="friend-leaderboard-row">
+                    <span>${index + 1}. ${esc(member.name)}</span>
+                    <span>${member.averageLifeScore == null ? "—" : `${member.averageLifeScore}/100`}</span>
+                    <span>${member.habitRate == null ? "—" : `${member.habitRate}%`}</span>
+                    <span>${member.focusMinutes == null ? "—" : `${member.focusMinutes}m`}</span>
+                    <span>${member.streakDays == null ? "—" : `${member.streakDays}d`}</span>
+                    <span>${member.steps == null ? "—" : Number(member.steps).toLocaleString()}</span>
+                </div>`).join("");
+                return `<article class="friend-challenge-card">
+                    <header><div><h3>90-day group match</h3><p>${challenge.status === "completed" ? "Complete" : `${remaining} days remaining`} · Ends ${esc(new Date(challenge.endsAt).toLocaleDateString())}</p></div></header>
+                    <div class="friend-leaderboard">
+                        <div class="friend-leaderboard-row is-heading"><span>Friend</span><span>Avg. Life Score</span><span>Habits</span><span>Focus</span><span>Streak</span><span>Steps</span></div>
+                        ${rows || friendEmpty("No accepted participants yet.")}
+                    </div>
+                </article>`;
+            }).join("")
+            : friendEmpty("Create a group match with your friends to start competing.");
+        setFriendsStatus("Your presence is visible only to accepted friends. Match metrics are shared only with accepted match members.", "success");
+    }
+
+    async function loadFriends() {
+        if (friendLoadInProgress) return;
+        friendLoadInProgress = true;
+        setFriendsStatus("Loading friend data…");
+        try {
+            friendState = await friendApi("/api/friends/state", { method: "POST", body: "{}" });
+            renderFriendState(friendState);
+            if (friendState.enabled) {
+                await updateFriendPresence();
+                await syncFriendProgress();
+            }
+        } catch (error) {
+            friendState = null;
+            document.getElementById("friendsWorkspace").hidden = true;
+            const sharingToggle = document.getElementById("friendSharingToggle");
+            sharingToggle.checked = false;
+            sharingToggle.disabled = error.status === 401;
+            setFriendsStatus(
+                error.status === 401
+                    ? /expired|revoked/i.test(error.message)
+                        ? "Your sign-in session expired. Open the profile menu, log out, then sign in again."
+                        : "Sign in with Google or a password account to use Friends. Guest mode cannot search; use the profile menu to switch accounts."
+                    : error.message,
+                "error"
+            );
+        } finally {
+            friendLoadInProgress = false;
+        }
+    }
+
+    document.getElementById("friendSharingToggle").addEventListener("change", async (event) => {
+        const toggle = event.currentTarget;
+        if (!toggle.checked && !window.confirm("Turn off friend discovery and remove your saved match metrics?")) {
+            toggle.checked = true;
+            return;
+        }
+        toggle.disabled = true;
+        try {
+            await friendApi("/api/friends/settings", {
+                method: "PUT",
+                body: JSON.stringify({ enabled: toggle.checked })
+            });
+            friendLastProgressSync = 0;
+            await loadFriends();
+        } catch (error) {
+            toggle.checked = !toggle.checked;
+            setFriendsStatus(error.message, "error");
+        } finally {
+            toggle.disabled = false;
+        }
+    });
+
+    document.getElementById("friendSearchForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const query = document.getElementById("friendSearchInput").value.trim();
+        const results = document.getElementById("friendSearchResults");
+        results.innerHTML = friendEmpty("Searching…");
+        try {
+            const data = await friendApi("/api/friends/search", {
+                method: "POST",
+                body: JSON.stringify({ query })
+            });
+            results.innerHTML = data.users.length
+                ? data.users.map((user) => `<div class="friend-row"><div class="friend-row-copy"><strong>${esc(user.name)}</strong></div>
+                    <button type="button" class="friend-action is-primary" data-friend-request="${esc(user.id)}">Add friend</button></div>`).join("")
+                : friendEmpty("No opted-in accounts found.");
+        } catch (error) {
+            results.innerHTML = friendEmpty(error.message);
+        }
+    });
+
+    document.getElementById("friendsWorkspace").addEventListener("click", async (event) => {
+        const requestButton = event.target.closest("[data-friend-request]");
+        const requestDecision = event.target.closest("[data-request-id]");
+        const challengeDecision = event.target.closest("[data-challenge-action]");
+        const removeButton = event.target.closest("[data-friend-remove]");
+        try {
+            if (requestButton) {
+                await friendApi("/api/friends/requests", {
+                    method: "POST",
+                    body: JSON.stringify({ userId: requestButton.dataset.friendRequest })
+                });
+                setFriendsStatus("Friend request sent.", "success");
+                document.getElementById("friendSearchForm").requestSubmit();
+                await loadFriends();
+            } else if (requestDecision) {
+                await friendApi(`/api/friends/requests/${encodeURIComponent(requestDecision.dataset.requestId)}`, {
+                    method: "POST",
+                    body: JSON.stringify({ action: requestDecision.dataset.requestAction })
+                });
+                await loadFriends();
+            } else if (challengeDecision) {
+                await friendApi(`/api/friends/challenges/${encodeURIComponent(challengeDecision.dataset.challengeId)}/respond`, {
+                    method: "POST",
+                    body: JSON.stringify({ action: challengeDecision.dataset.challengeAction })
+                });
+                await loadFriends();
+            } else if (removeButton) {
+                const friendName = removeButton.closest(".friend-row").querySelector("strong").textContent;
+                if (!window.confirm(`Remove ${friendName} from your friends? They will no longer see your match metrics.`)) return;
+                await friendApi(`/api/friends/${encodeURIComponent(removeButton.dataset.friendRemove)}`, { method: "DELETE" });
+                await loadFriends();
+            }
+        } catch (error) {
+            setFriendsStatus(error.message, "error");
+        }
+    });
+
+    document.getElementById("createFriendChallenge").addEventListener("click", async () => {
+        const friendIds = Array.from(document.querySelectorAll("[data-challenge-friend]:checked"))
+            .map((checkbox) => checkbox.dataset.challengeFriend);
+        if (!friendIds.length) return;
+        if (!window.confirm("The 90-day clock starts now. Friends who accept later are scored from their join date. Start this group match?")) return;
+        try {
+            await friendApi("/api/friends/challenges", {
+                method: "POST",
+                body: JSON.stringify({ friendIds })
+            });
+            setFriendsStatus("Your 90-day match has started. Invited friends must accept to join.", "success");
+            await loadFriends();
+        } catch (error) {
+            setFriendsStatus(error.message, "error");
+        }
+    });
+
+    setInterval(() => {
+        if (document.visibilityState === "visible" && friendState && friendState.enabled) {
+            void updateFriendPresence();
+            void syncFriendProgress();
+        }
+    }, 60_000);
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && friendState && friendState.enabled) {
+            void updateFriendPresence();
+            void syncFriendProgress();
+        }
+    });
+
     function navigateToSection(sectionId) {
+        if (focusLockActive && sectionId !== "dashboard") return;
         const section = document.getElementById(sectionId);
         if (!section || !section.classList.contains("section")) return;
         window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -7541,10 +7936,12 @@
             habits: "Habits",
             goals: "Goals",
             analytics: "Analytics",
+            friends: "Friends",
             tasks: "Task"
         })[sectionId];
         if (sectionId === "dashboard") renderCalendar();
         else if (sectionId === "tasks") renderDailyTask();
+        else if (sectionId === "friends") loadFriends();
         else renderStats();
     }
 
@@ -7681,6 +8078,7 @@
         if (!focusSessionDate) focusSessionDate = isoFromUTC(todayUTC());
         saveFocusTimerState();
         focusInterval = setInterval(tickFocusTimer, 1000);
+        setFocusLock(true, true);
         renderFocusTimer();
     });
 

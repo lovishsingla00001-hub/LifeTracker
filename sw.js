@@ -1,14 +1,14 @@
-const CACHE = "lt-v24";
+const CACHE = "lt-v28";
 const APP_SHELL = [
     "./",
     "./index.html",
     "./dashboard",
     "./dashboard.html",
     "./dashboard.css",
-    "./dashboard.css?v=84",
+    "./dashboard.css?v=88",
     "./auth.css",
     "./dashboard.js",
-    "./dashboard.js?v=130",
+    "./dashboard.js?v=135",
     "./qrcode.js",
     "./support-upi.png",
     "./pwa.js",

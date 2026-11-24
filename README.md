@@ -24,6 +24,18 @@ commands include `--local` and do not modify the production database.
 Do not run `wrangler deploy` for this local workflow. Keep `worker/.dev.vars`,
 `worker/.wrangler/`, OAuth secrets, and signing keys out of Git.
 
+## Friends and 90-day matches
+
+Friends is opt-in and requires a signed-in account backed by the local Worker;
+Guest mode cannot use friend search or matches. Enable discovery to find
+accounts that also opted in, accept a friend request, then invite accepted
+friends to a group match. The 90-day timer starts when the creator starts the
+match; invitees who join later are scored from their join date. Only the daily
+Life Score, habit completion percentage, focus minutes, streak days, and steps
+are shared with accepted match members. Turning sharing off removes your saved
+match metrics. Migration `0009_friend_challenges.sql` is applied by the local
+migration command above.
+
 ## LifeTrack AI V2.0 development
 
 V2 is being built in phases inside the existing web dashboard, Cloudflare
@@ -497,7 +509,7 @@ https://developer.apple.com/programs/enroll/. After enrollment:
 
 LifeTrack remembers the signed-in account name and email in this browser and
 opens the dashboard automatically after refreshes and browser restarts. This
-local app session lasts until you choose "Log out" or clear this site's
+local app session lasts until you choose **Log out** or clear this site's
 browser data. The profile menu shows which account is remembered and offers
 **Switch account** and **Log out** actions.
 
@@ -521,7 +533,7 @@ available health readings into Fitness Today; device health readings are
 read-only in the dashboard. The workout plan has a Start/Stop/Save exercise
 timer; saved minutes sync as fitness data, reset for each new day, and appear
 in daily and yearly Fitness trends. Focus progress is shown against a
-30-minute daily target and counts only completed LifeTrack "Focus Session"
+30-minute daily target and counts only completed LifeTrack **Focus Session**
 minutes; Android app usage is not treated as Focus. The timer works on both
 Android and PC, restores running or paused sessions after a reload, and syncs
 completed sessions through Google Drive. Android's separate Device Focus
@@ -543,4 +555,3 @@ Health data is not requested during Google sign-in. Imported Fitness Today
 entries stay on the device unless you use Google sign-in, in which case they
 are included with the existing tracker backup in the private Google Drive
 app-data area.
-
