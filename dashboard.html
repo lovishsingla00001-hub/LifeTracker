@@ -28,7 +28,7 @@
             }
         }
     </script>
-    <meta name="theme-color" content="#09090b">
+    <meta name="theme-color" content="#0c0e12">
     <meta name="color-scheme" content="dark light">
     <script src="config.js"></script>
     <script src="app-redirect.js"></script>
@@ -39,7 +39,7 @@
     <script src="pwa.js" defer></script>
     <link rel="icon" type="image/png" href="lifetrack-logo.png?v=2" sizes="120x120" media="(prefers-color-scheme: light)" data-theme-icon="light">
     <link rel="icon" type="image/png" href="lifetrack-logo-dark.png?v=2" sizes="120x120" media="(prefers-color-scheme: dark)" data-theme-icon="dark">
-    <link rel="stylesheet" href="dashboard.css?v=92">
+    <link rel="stylesheet" href="dashboard.css?v=93">
 </head>
 <body class="dark">
 <script>
@@ -49,7 +49,7 @@
             document.body.classList.remove("dark");
             document.documentElement.style.colorScheme = "light";
             const m = document.querySelector('meta[name="theme-color"]');
-            if (m) m.content = "#f8f9fa";
+            if (m) m.content = "#f7f8f9";
         } else {
             document.documentElement.style.colorScheme = "dark";
         }
@@ -680,7 +680,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script src="qrcode.js"></script>
-<script src="dashboard.js?v=139"></script>
+<script src="dashboard.js?v=140"></script>
 <script>
     if ("serviceWorker" in navigator && !window.LT_REDIRECTING && location.protocol !== "file:") {
         try {

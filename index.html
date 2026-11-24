@@ -32,7 +32,7 @@
         }
     </script>
     <meta name="google-site-verification" content="VUvUIpObcq8B8fJxpyTdOtFRyDV-gneoDYOLW3EzlEM">
-    <meta name="theme-color" content="#09090b">
+    <meta name="theme-color" content="#0c0e12">
     <meta name="color-scheme" content="dark light">
     <link rel="icon" type="image/png" href="lifetrack-logo.png?v=2" media="(prefers-color-scheme: light)"
         data-theme-icon="light">
@@ -44,8 +44,8 @@
     <script src="app-redirect.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="pwa.js" defer></script>
-    <link rel="stylesheet" href="dashboard.css?v=92">
-    <link rel="stylesheet" href="auth.css?v=86">
+    <link rel="stylesheet" href="dashboard.css?v=93">
+    <link rel="stylesheet" href="auth.css?v=87">
 </head>
 
 <body class="auth-body dark">
@@ -208,7 +208,7 @@
             function setTheme(isDark) {
                 document.body.classList.toggle("dark", isDark);
                 document.documentElement.style.colorScheme = isDark ? "dark" : "light";
-                document.querySelector('meta[name="theme-color"]').content = isDark ? "#09090b" : "#f8f9fa";
+                document.querySelector('meta[name="theme-color"]').content = isDark ? "#0c0e12" : "#f7f8f9";
                 themeBtn.textContent = isDark ? "☀" : "🌙";
                 document.querySelectorAll("[data-theme-icon]").forEach((icon) => {
                     icon.media = icon.dataset.themeIcon === (isDark ? "dark" : "light") ? "all" : "not all";

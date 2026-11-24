@@ -8339,7 +8339,7 @@
         const isDark = themeMode === "dark" || (themeMode === "system" && systemColorScheme.matches);
         document.body.classList.toggle("dark", isDark);
         document.documentElement.style.colorScheme = isDark ? "dark" : "light";
-        document.querySelector('meta[name="theme-color"]').content = isDark ? "#09090b" : "#f8f9fa";
+        document.querySelector('meta[name="theme-color"]').content = isDark ? "#0c0e12" : "#f7f8f9";
         themeToggle.setAttribute("aria-pressed", String(isDark));
         themeToggle.querySelector(".nav-icon").textContent = isDark ? "☀" : "🌙";
         themeToggle.querySelector(".nav-text").textContent = isDark ? "Light Mode" : "Dark Mode";
