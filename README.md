@@ -77,9 +77,9 @@ yearly month-by-month view.
 ## Install LifeTrack as an app
 
 Deploy the Worker app and open its HTTPS URL once on each device.
-On Android, open Chrome's menu and choose **Install app** or **Add to Home
-screen**. On Windows, open the site in Chrome or Edge and choose **Install
-LifeTrack** from the address bar or browser menu. The service worker caches the
+On Android, open Chrome's menu and choose "Install app" or "Add to Home
+screen". On Windows, open the site in Chrome or Edge and choose "Install
+LifeTrack" from the address bar or browser menu. The service worker caches the
 app shell from either the login page or dashboard, including `index.html` and
 `dashboard.html`, for launch when offline; Google sign-in, Drive sync, and
 health sync still require an internet connection. Updates are fetched from the site when
