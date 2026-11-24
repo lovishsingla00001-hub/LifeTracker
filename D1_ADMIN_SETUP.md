@@ -13,13 +13,20 @@ registered on their next successful sign-in.
 
 ## Local test
 
-Run these commands from the `worker` directory:
+Run these commands from the `worker` directory. Wrangler uses local SQLite/KV
+storage here; `--local` does not read or modify the production D1 database:
 
 ```powershell
 npx wrangler d1 migrations apply lifetrack-monetization --local --config wrangler.toml
 node --test index.test.mjs user-admin.test.mjs
-npx wrangler dev --local --config wrangler.toml
+npm run dev:local
 ```
+
+Open `http://127.0.0.1:8787/` for the local app,
+`http://127.0.0.1:8787/dashboard` for the dashboard, or
+`http://127.0.0.1:8787/admin` for admin. Local browser requests use the local
+Worker instead of the deployed Worker. The server binds to loopback only and
+is not exposed as a public/tunnel link.
 
 For local admin access, put the following in `worker/.dev.vars` (do not commit
 this file):
@@ -29,10 +36,13 @@ ADMIN_EMAIL=your-verified-google-email@example.com
 ```
 
 Sign in using that verified Google account, then open
-`http://localhost:8787/admin`. Password accounts are not eligible for admin
+`http://127.0.0.1:8787/admin`. Password accounts are not eligible for admin
 access because LifeTrack does not currently verify email ownership for those
 accounts. Google OAuth credentials and the token-encryption key must also be
-configured locally to test the complete OAuth flow.
+configured locally to test the complete OAuth flow. For Google sign-in, add
+`http://127.0.0.1:8787/api/auth/google/callback` to the OAuth client's
+authorized redirect URIs. Local Apple sign-in also requires a provider setup
+that permits the local callback; otherwise use email/password or guest mode.
 
 ## Production rollout
 
