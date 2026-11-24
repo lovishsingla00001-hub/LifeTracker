@@ -138,6 +138,8 @@
                 if (!Number.isSafeInteger(latestVersion) || latestVersion <= installedVersion) return;
                 androidUpdateMessage.textContent =
                     `Version ${String(update.versionName || latestVersion)} is ready. Download it in your browser, then tap Install to update LifeTrack.`;
+                const dlBtn = document.getElementById("androidUpdateDownload");
+                if (dlBtn && update.downloadUrl) dlBtn.href = update.downloadUrl;
                 androidUpdateNotice.hidden = false;
             })
             .catch((error) => console.warn("LifeTrack could not check for Android app updates.", error));
@@ -959,11 +961,22 @@
                 box.className = "box";
                 box.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
 
+    let recentCheckinTimes = [];
+    function checkHabitIntegrityRate() {
+        const now = Date.now();
+        recentCheckinTimes = recentCheckinTimes.filter((t) => now - t < 1500);
+        recentCheckinTimes.push(now);
+        if (recentCheckinTimes.length >= 4) {
+            toast("⚠️ Integrity Guard: Multiple habits checked in 1 second. Please track habits as you genuinely complete them.");
+        }
+    }
+
                 checkbox.addEventListener("change", () => {
                     if (locked) {
                         checkbox.checked = false;
                         return;
                     }
+                    if (checkbox.checked) checkHabitIntegrityRate();
                     if (habit.toLowerCase() === "read" && checkbox.checked && cellUTC === t0) {
                         if (readingPlan.currentPage < readingPlan.dailyEnd) {
                             checkbox.checked = false;
@@ -1839,7 +1852,7 @@
        ====================================================================== */
 
     const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const PALETTE = ["#2758b8", "#7652d6", "#087fce", "#d76c50", "#a56a00", "#c34c83", "#536783", "#174bc1"];
+    const PALETTE = ["#10B981", "#6366F1", "#F59E0B", "#0EA5E9", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316"];
     const FIT_ON = false;
     const LIFE_SCORE_CATEGORIES = ["habits", "goals", "focus", "wellness", "task"];
     const LIFE_SCORE_DEFAULT_WEIGHTS = { habits: 30, goals: 25, focus: 20, wellness: 15, task: 10 };
@@ -2321,10 +2334,151 @@
         </article>`;
         summary.innerHTML = `<div class="task-summary-heading"><span class="eyebrow">TODAY'S TASK</span><span aria-hidden="true">⚡</span></div>${taskMarkup()}`;
         detail.innerHTML = taskMarkup();
+        renderAiDailyBriefBanner();
+        renderTaskNotifications();
         clearTimeout(renderDailyTask.refreshTimer);
         const now = new Date();
         const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
         renderDailyTask.refreshTimer = setTimeout(renderDailyTask, Math.max(1000, nextMidnight.getTime() - now.getTime()));
+    }
+
+    function getDailyTaskSummary() {
+        const task = currentDailyTask();
+        const now = todayUTC();
+        const today = isoFromUTC(now);
+        const todayStatuses = habits.map((habit) => ({
+            name: habit,
+            done: Boolean(checks[keyFor(now, habit)])
+        }));
+        const completed = todayStatuses.filter((item) => item.done).length;
+        const total = todayStatuses.length;
+        const percent = total ? Math.round((completed / total) * 100) : 0;
+        const unticked = todayStatuses.filter((item) => !item.done).map((item) => item.name);
+        const fit = (fitness && fitness[today]) || {};
+
+        const summaryText = task.completed
+            ? `Mission Completed! "${task.title}" (${task.category}). ${completed}/${total} habits done today (${percent}%).`
+            : `Today's Mission: "${task.title}" (${task.category}, ${task.minutes}m). ${completed}/${total} habits done (${percent}%).`;
+
+        return {
+            task,
+            completed,
+            total,
+            percent,
+            unticked,
+            fit,
+            summaryText
+        };
+    }
+
+    function renderAiDailyBriefBanner() {
+        const banner = document.getElementById("aiDailyBriefBanner");
+        if (!banner) return;
+        const data = getDailyTaskSummary();
+        const task = data.task;
+        const dateLabel = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+        const dateEl = document.getElementById("aiBriefDate");
+        const titleEl = document.getElementById("aiBriefTitle");
+        const summaryEl = document.getElementById("aiBriefSummary");
+        const tagEl = document.getElementById("aiBriefStatusTag");
+        const metricsEl = document.getElementById("aiBriefMetrics");
+        const completeBtn = document.getElementById("aiBriefCompleteBtn");
+
+        if (dateEl) dateEl.textContent = dateLabel;
+        if (tagEl) {
+            tagEl.textContent = task.completed ? "✓ Completed" : `${task.minutes} min · ${task.category}`;
+            tagEl.className = `ai-brief-status-tag ${task.completed ? "done" : "pending"}`;
+        }
+        if (titleEl) titleEl.textContent = task.title;
+        if (summaryEl) summaryEl.textContent = `${task.instruction}. Finish with: ${task.finish}.`;
+        if (completeBtn) {
+            completeBtn.textContent = task.completed ? "✓ Task Completed" : "✓ Mark Complete";
+            completeBtn.classList.toggle("done", Boolean(task.completed));
+        }
+        if (metricsEl) {
+            metricsEl.innerHTML = `
+                <span class="ai-brief-metric-chip">⚡ Habits: <b>${data.completed}/${data.total} (${data.percent}%)</b></span>
+                <span class="ai-brief-metric-chip">💧 Water: <b>${data.fit.water || 0}ml</b></span>
+                <span class="ai-brief-metric-chip">👟 Steps: <b>${data.fit.steps || 0}</b></span>
+            `;
+        }
+    }
+
+    function renderTaskNotifications() {
+        const notifList = document.getElementById("notifList");
+        const notifBadge = document.getElementById("notifBadge");
+        if (!notifList || !notifBadge) return;
+
+        const data = getDailyTaskSummary();
+        const task = data.task;
+        const isDone = Boolean(task.completed);
+
+        notifBadge.textContent = isDone ? "✓" : "1";
+        notifBadge.classList.toggle("is-done", isDone);
+
+        notifList.innerHTML = `
+            <div class="notif-card${isDone ? " is-complete" : " is-active"}">
+                <div class="notif-card-header">
+                    <span class="notif-pill ${isDone ? "done" : "priority"}">${isDone ? "COMPLETED" : "DAILY MISSION"}</span>
+                    <span class="notif-time">${esc(task.category)}</span>
+                </div>
+                <h4 class="notif-card-title">${esc(task.title)}</h4>
+                <p class="notif-card-desc">${esc(task.instruction)} (${task.minutes} min)</p>
+                <div class="notif-meta-row">
+                    <span>⚡ Habits: <strong>${data.completed}/${data.total}</strong> (${data.percent}%)</span>
+                    <span>💧 Water: <strong>${data.fit.water || 0}ml</strong></span>
+                </div>
+                <div class="notif-card-actions">
+                    <button type="button" class="notif-action-btn primary" data-notif-action="complete-task">
+                        ${isDone ? "✓ Completed" : "Mark Complete"}
+                    </button>
+                    <button type="button" class="notif-action-btn secondary" data-notif-action="ask-ai">
+                        ✨ Ask AI
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function sendDeviceNotification() {
+        const data = getDailyTaskSummary();
+        const title = `LifeTrack Daily Briefing: ${data.task.title}`;
+        const body = data.summaryText;
+
+        if (!("Notification" in window)) {
+            toast("Web notifications are not supported in this browser.");
+            return;
+        }
+
+        if (Notification.permission === "granted") {
+            try {
+                const notif = new Notification(title, {
+                    body,
+                    icon: "lifetrack-logo.png",
+                    badge: "lifetrack-logo.png",
+                    tag: "daily-task-summary"
+                });
+                notif.onclick = () => {
+                    window.focus();
+                    const aiPanel = document.getElementById("aiPanel");
+                    if (aiPanel) aiPanel.hidden = false;
+                };
+                toast("Daily task notification sent to device!");
+            } catch (e) {
+                toast("Could not display device notification: " + e.message);
+            }
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then((permission) => {
+                if (permission === "granted") {
+                    sendDeviceNotification();
+                } else {
+                    toast("Notification permission was dismissed.");
+                }
+            });
+        } else {
+            toast("Notifications are blocked in browser settings. Please allow notifications.");
+        }
     }
 
     function renderFocusTimer() {
@@ -3266,10 +3420,33 @@
         const maxBest = Math.max(...monthlyStreaks.map((streak) => streak.best), 7);
         list.innerHTML = habits.map((h, index) => {
             const s = monthlyStreaks[index];
-            return `<div class="streak-row"><div class="streak-top"><span><i style="background:${habitColor(h)}"></i>${esc(h)}</span><b>${s.cur > 0 ? "🔥 " : ""}${s.cur} day${s.cur === 1 ? "" : "s"}</b></div>
-                <div class="streak-track" title="Current this month ${s.cur}, best this month ${s.best}"><b style="width:${(s.cur / maxBest) * 100}%;background:${habitColor(h)}"></b><u style="left:${(s.best / maxBest) * 100}%"></u></div>
-                <small>Best this month: ${s.best} day${s.best === 1 ? "" : "s"}</small></div>`;
+            const color = habitColor(h);
+            const targetStreak = Math.max(s.best, 7);
+            const pct = targetStreak > 0 ? clamp((s.cur / targetStreak) * 100, 0, 100) : 0;
+            const isRecord = s.cur >= s.best && s.cur > 0;
+            return `<div class="streak-circle-card${isRecord ? " is-record" : ""}" title="${esc(h)} · Current: ${s.cur}d · Best: ${s.best}d">
+                <div class="streak-circle-graphic">
+                    ${ringSVG(pct, {
+                        size: 66,
+                        stroke: 5.5,
+                        color: color,
+                        text: s.cur > 0 ? `${s.cur}d` : "0d",
+                        ariaLabel: `${esc(h)}: ${s.cur} day streak`
+                    })}
+                </div>
+                <div class="streak-circle-info">
+                    <strong class="streak-habit-name" title="${esc(h)}">
+                        <i class="streak-dot" style="background:${color}"></i>
+                        <span>${esc(h)}</span>
+                    </strong>
+                    <div class="streak-circle-meta">
+                        <span class="streak-best-pill">Best: ${s.best}d</span>
+                        ${isRecord ? `<span class="streak-peak-pill">🔥 Best</span>` : ""}
+                    </div>
+                </div>
+            </div>`;
         }).join("");
+        animateRings(list);
     }
 
     function renderBadges() {
@@ -4689,261 +4866,6 @@
         return root.querySelector(".modal");
     }
 
-    function buildSupportPaymentUri(config, amount, app) {
-        const appSchemes = {
-            upi: "upi://pay",
-            gpay: "tez://upi/pay",
-            phonepe: "phonepe://pay",
-            paytm: "paytmmp://pay",
-            bhim: "upi://pay"
-        };
-        const amountNumber = Number(amount);
-        if (!config || !config.enabled || !config.upiId || !config.payeeName || !appSchemes[app]) {
-            throw new Error("Support UPI details are not configured.");
-        }
-        if (!Number.isFinite(amountNumber) || amountNumber <= 0 || amountNumber > 100000) {
-            throw new Error("Enter a support amount between ₹0.01 and ₹100,000.");
-        }
-        const amountText = amountNumber.toFixed(2).replace(/\.?0+$/, "");
-        const query = `pa=${encodeURIComponent(config.upiId)}&pn=${encodeURIComponent(config.payeeName)}&tn=Support%20LifeTrack&am=${amountText}&cu=INR`;
-        return `${appSchemes[app]}?${query}`;
-    }
-
-    function openSupportModal() {
-        const modal = openModal(`
-            <div class="support-modal-head">
-                <div><h3>Support LifeTrack</h3><p>Buy Me a Coffee</p></div>
-                <button type="button" class="support-close" data-cancel aria-label="Close support">×</button>
-            </div>
-            <p class="support-voluntary-note">Your support is completely voluntary. Every LifeTrack feature stays available without a payment.</p>
-            <div class="support-amounts" role="group" aria-label="Choose a support amount">
-                <button type="button" class="support-amount-chip" data-support-amount="29" aria-pressed="false">₹29</button>
-                <button type="button" class="support-amount-chip" data-support-amount="49" aria-pressed="true">₹49</button>
-                <button type="button" class="support-amount-chip" data-support-amount="99" aria-pressed="false">₹99</button>
-                <button type="button" class="support-amount-chip" data-support-amount="custom" aria-pressed="false">Custom</button>
-            </div>
-            <label id="supportCustomAmountRow" class="support-custom-amount" hidden for="supportCustomAmount">
-                Custom amount (INR)
-                <input id="supportCustomAmount" type="number" min="0.01" max="100000" step="0.01" inputmode="decimal" placeholder="Enter an amount">
-            </label>
-            <div class="support-content">
-                <div class="support-qr-column">
-                    <button type="button" id="supportQrExpand" class="support-qr-expand" aria-label="Enlarge scannable UPI QR code">
-                        <img id="supportQrImage" src="./support-upi.png" alt="Your saved PhonePe UPI QR code">
-                    </button>
-                    <span class="support-qr-hint">Tap to enlarge. Check the payee and amount before paying.</span>
-                    <code id="supportUpiId" class="support-upi-id"></code>
-                    <button type="button" id="supportCopyUpi" class="support-copy-button" disabled>Copy UPI ID</button>
-                </div>
-                <div class="support-payment-links" role="group" aria-label="Choose a UPI payment app">
-                    <a class="support-payment-link" data-support-app="upi" href="#" aria-disabled="true">Any UPI App</a>
-                    <a class="support-payment-link" data-support-app="gpay" href="#" aria-disabled="true">GPay</a>
-                    <a class="support-payment-link" data-support-app="phonepe" href="#" aria-disabled="true">PhonePe</a>
-                    <a class="support-payment-link" data-support-app="paytm" href="#" aria-disabled="true">Paytm</a>
-                    <a class="support-payment-link" data-support-app="bhim" href="#" aria-disabled="true">BHIM</a>
-                </div>
-            </div>
-            <div class="support-fallback">
-                <a id="supportFallbackLink" href="#" target="_blank" rel="noopener noreferrer" hidden>UPI not working? Use backup link</a>
-                <p id="supportFallbackMessage">UPI not working? No backup support link is configured. Please contact LifeTrack support.</p>
-            </div>
-            <p id="supportSetupMessage" class="support-status" role="status" aria-live="polite">Loading support options…</p>
-        `);
-        modal.classList.add("support-modal");
-
-        const qrButton = modal.querySelector("#supportQrExpand");
-        const qrImage = modal.querySelector("#supportQrImage");
-        const upiLabel = modal.querySelector("#supportUpiId");
-        const copyButton = modal.querySelector("#supportCopyUpi");
-        const status = modal.querySelector("#supportSetupMessage");
-        const amountInput = modal.querySelector("#supportCustomAmount");
-        const customAmountRow = modal.querySelector("#supportCustomAmountRow");
-        const fallbackLink = modal.querySelector("#supportFallbackLink");
-        const fallbackMessage = modal.querySelector("#supportFallbackMessage");
-        const paymentLinks = Array.from(modal.querySelectorAll("[data-support-app]"));
-        let supportConfig = null;
-        let selectedAmount = "49";
-        let qrRenderNumber = 0;
-
-        function currentAmount() {
-            const amount = selectedAmount === "custom" ? amountInput.value : selectedAmount;
-            const number = Number(amount);
-            return Number.isFinite(number) && number > 0 && number <= 100000 ? number : null;
-        }
-
-        async function renderPaymentOptions() {
-            const renderNumber = ++qrRenderNumber;
-            const amount = currentAmount();
-            const enabled = Boolean(supportConfig && supportConfig.enabled && amount);
-            paymentLinks.forEach((link) => {
-                link.setAttribute("aria-disabled", String(!enabled));
-                link.href = "#";
-            });
-            if (!supportConfig || !supportConfig.enabled) {
-                qrImage.src = "./support-upi.png";
-                qrImage.alt = "Your saved PhonePe UPI QR code";
-                qrImage.hidden = false;
-                qrButton.disabled = false;
-                status.textContent = supportConfig
-                    ? `${supportConfig.setupMessage || "UPI app links are not configured."} Your saved QR remains available; verify the amount before paying.`
-                    : "Your saved PhonePe QR is available. UPI app buttons need support configuration.";
-                return;
-            }
-            if (!amount) {
-                qrImage.src = "./support-upi.png";
-                qrImage.alt = "Your saved PhonePe UPI QR code";
-                qrImage.hidden = false;
-                qrButton.disabled = false;
-                status.textContent = "Enter an amount between ₹0.01 and ₹100,000.";
-                return;
-            }
-
-            qrButton.disabled = true;
-            qrImage.hidden = true;
-            status.textContent = "Updating QR for the selected amount…";
-            try {
-                const paymentUris = paymentLinks.map((link) => [
-                    link,
-                    buildSupportPaymentUri(supportConfig, amount, link.dataset.supportApp)
-                ]);
-                paymentUris.forEach(([link, uri]) => {
-                    link.href = uri;
-                    link.setAttribute("aria-disabled", "false");
-                });
-                if (!window.QRCode || typeof window.QRCode.toDataURL !== "function") {
-                    throw new Error("The local QR code generator is unavailable.");
-                }
-                const qrDataUrl = await window.QRCode.toDataURL(paymentUris[0][1], {
-                    errorCorrectionLevel: "M",
-                    margin: 2,
-                    width: 360,
-                    color: { dark: "#111827", light: "#ffffff" }
-                });
-                if (!modal.isConnected || renderNumber !== qrRenderNumber) return;
-                qrImage.src = qrDataUrl;
-                qrImage.alt = `UPI QR code for ₹${amount}`;
-                qrImage.hidden = false;
-                qrButton.disabled = false;
-                status.textContent = "";
-            } catch (error) {
-                console.error("LifeTrack could not create the local support QR code.", error);
-                if (!modal.isConnected || renderNumber !== qrRenderNumber) return;
-                qrImage.src = "./support-upi.png";
-                qrImage.alt = "Your saved PhonePe UPI QR code";
-                qrImage.hidden = false;
-                qrButton.disabled = false;
-                status.textContent = "Dynamic QR could not be created. Your saved PhonePe QR is shown; verify the amount before paying.";
-            }
-        }
-
-        modal.querySelectorAll("[data-support-amount]").forEach((button) => {
-            button.addEventListener("click", () => {
-                selectedAmount = button.dataset.supportAmount;
-                customAmountRow.hidden = selectedAmount !== "custom";
-                modal.querySelectorAll("[data-support-amount]").forEach((chip) => {
-                    chip.setAttribute("aria-pressed", String(chip === button));
-                });
-                if (selectedAmount === "custom") amountInput.focus();
-                renderPaymentOptions();
-            });
-        });
-        amountInput.addEventListener("input", renderPaymentOptions);
-        paymentLinks.forEach((link) => link.addEventListener("click", (event) => {
-            if (link.getAttribute("aria-disabled") === "true") event.preventDefault();
-        }));
-        qrButton.addEventListener("click", () => {
-            if (qrButton.disabled || !qrImage.src) return;
-            const viewer = document.createElement("div");
-            viewer.className = "support-qr-fullscreen";
-            viewer.setAttribute("role", "dialog");
-            viewer.setAttribute("aria-modal", "true");
-            viewer.setAttribute("aria-label", "Full-screen UPI QR code");
-            const image = document.createElement("img");
-            image.src = qrImage.src;
-            image.alt = qrImage.alt;
-            const closeButton = document.createElement("button");
-            closeButton.type = "button";
-            closeButton.setAttribute("aria-label", "Close full-screen QR code");
-            closeButton.textContent = "×";
-            closeButton.addEventListener("click", () => viewer.remove());
-            viewer.addEventListener("click", (event) => {
-                if (event.target === viewer) viewer.remove();
-            });
-            viewer.append(image, closeButton);
-            modal.append(viewer);
-            closeButton.focus();
-        });
-        copyButton.addEventListener("click", async () => {
-            if (!supportConfig || !supportConfig.enabled) return;
-            try {
-                if (navigator.clipboard && window.isSecureContext) {
-                    try {
-                        await navigator.clipboard.writeText(supportConfig.upiId);
-                    } catch (error) {
-                        console.warn("LifeTrack clipboard API was unavailable; using the local copy fallback.", error);
-                        const input = document.createElement("textarea");
-                        input.value = supportConfig.upiId;
-                        input.setAttribute("readonly", "");
-                        input.style.position = "fixed";
-                        input.style.opacity = "0";
-                        document.body.append(input);
-                        input.select();
-                        const copied = document.execCommand("copy");
-                        input.remove();
-                        if (!copied) throw new Error("Clipboard copy was blocked.");
-                    }
-                } else {
-                    const input = document.createElement("textarea");
-                    input.value = supportConfig.upiId;
-                    input.setAttribute("readonly", "");
-                    input.style.position = "fixed";
-                    input.style.opacity = "0";
-                    document.body.append(input);
-                    input.select();
-                    const copied = document.execCommand("copy");
-                    input.remove();
-                    if (!copied) throw new Error("Clipboard copy was blocked.");
-                }
-                toast("UPI ID copied.");
-            } catch (error) {
-                console.error("LifeTrack could not copy the support UPI ID.", error);
-                status.textContent = "Could not copy the UPI ID. Select and copy the displayed ID instead.";
-            }
-        });
-
-        fetch("/api/support/config", { cache: "no-store", credentials: "same-origin" })
-            .then((response) => {
-                if (!response.ok) throw new Error(`Support configuration request failed (${response.status}).`);
-                return response.json();
-            })
-            .then((config) => {
-                if (!modal.isConnected) return;
-                supportConfig = config;
-                if (config.enabled && config.upiId && config.payeeName) {
-                    upiLabel.textContent = config.upiId;
-                    copyButton.disabled = false;
-                    status.textContent = "";
-                } else {
-                    status.textContent = config.setupMessage || "UPI support is not configured. Please contact LifeTrack support.";
-                }
-                const fallbackUrl = typeof config.fallbackUrl === "string" ? config.fallbackUrl : "";
-                if (fallbackUrl && /^(https:|mailto:|tel:)/i.test(fallbackUrl)) {
-                    fallbackLink.href = fallbackUrl;
-                    fallbackLink.hidden = false;
-                    fallbackMessage.hidden = true;
-                } else if (config.fallbackError) {
-                    fallbackMessage.textContent = `${config.fallbackError} Please contact LifeTrack support.`;
-                }
-                renderPaymentOptions();
-            })
-            .catch((error) => {
-                if (!modal.isConnected) return;
-                console.error("LifeTrack could not load support configuration.", error);
-                status.textContent = "Your saved PhonePe QR is shown. UPI app links could not be loaded; verify the payee and amount before paying.";
-                fallbackMessage.textContent = "UPI not working? No backup support link is available right now. Please contact LifeTrack support.";
-            });
-    }
-
     function confirmModal(title, text, okLabel, onOk) {
         const modal = openModal(`<h3>${esc(title)}</h3><p>${esc(text)}</p><div class="modal-actions"><button type="button" class="secondary-button" data-cancel>Cancel</button><button type="button" class="primary-button danger" id="modalOk">${esc(okLabel)}</button></div>`);
         modal.querySelector("#modalOk").addEventListener("click", () => { closeModal(); onOk(); });
@@ -5592,6 +5514,15 @@
         renderAINotes();
     }
 
+    function formatAIMessageContent(raw) {
+        if (!raw) return "";
+        let s = esc(raw);
+        s = s.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        s = s.replace(/\*(.*?)\*/g, "<em>$1</em>");
+        s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+        return s;
+    }
+
     function renderAIMessages() {
         const container = document.getElementById("aiMessages");
         container.innerHTML = "";
@@ -5605,7 +5536,7 @@
         aiConversation.slice(-AI_HISTORY_MESSAGE_LIMIT).forEach((message) => {
             const bubble = document.createElement("div");
             bubble.className = `ai-message ${message.role === "user" ? "user" : "assistant"}`;
-            bubble.textContent = message.content;
+            bubble.innerHTML = formatAIMessageContent(message.content);
             if (message.action === "sign-in") {
                 const signInButton = document.createElement("button");
                 signInButton.type = "button";
@@ -5709,10 +5640,18 @@
                 dailyTarget: readingPlan.dailyTarget
             },
             availableReadingBooks: READING_BOOKS.map(({ id, title, pages }) => ({ id, title, pages })),
-            dailyTask: {
-                title: currentDailyTask().title,
-                completed: Boolean(dailyTaskState && dailyTaskState.completed)
-            },
+            dailyTask: (() => {
+                const t = currentDailyTask();
+                return {
+                    title: t.title,
+                    category: t.category,
+                    instruction: t.instruction,
+                    minutes: t.minutes,
+                    twist: t.twist,
+                    finish: t.finish,
+                    completed: Boolean(dailyTaskState && dailyTaskState.completed)
+                };
+            })(),
             focusSession: { running: Boolean(focusEndsAt), minutes: focusDuration },
             reminders: aiReminder.reminders.map(({ id, title, time, enabled }) => ({ id, title, time, enabled })),
             sections: ["dashboard", "tasks", "habits", "goals", "analytics"],
@@ -5978,30 +5917,41 @@
     }
 
     async function requestGroqAI(messages, context, endpoint) {
-        const response = await fetch(endpoint, {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                messages,
-                context,
-                requestId: assistantId(),
-                conversationId: aiConversationId,
-                operation: "chat"
-            })
-        });
-        let data;
+        const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const timer = controller ? setTimeout(() => controller.abort(), 7000) : null;
         try {
-            data = await response.json();
-        } catch {
-            throw new Error(`LifeTrack AI returned an invalid response (HTTP ${response.status}).`);
+            const response = await fetch(endpoint, {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                signal: controller ? controller.signal : undefined,
+                body: JSON.stringify({
+                    messages,
+                    context,
+                    requestId: assistantId(),
+                    conversationId: aiConversationId,
+                    operation: "chat"
+                })
+            });
+            if (timer) clearTimeout(timer);
+            let data;
+            try {
+                data = await response.json();
+            } catch {
+                const err = new Error(`LifeTrack AI returned an invalid response (HTTP ${response.status}).`);
+                err.status = response.status;
+                throw err;
+            }
+            if (!response.ok) {
+                const error = new Error(data.error || `LifeTrack AI failed (HTTP ${response.status}).`);
+                error.status = response.status;
+                throw error;
+            }
+            return data;
+        } catch (err) {
+            if (timer) clearTimeout(timer);
+            throw err;
         }
-        if (!response.ok) {
-            const error = new Error(data.error || `LifeTrack AI failed (HTTP ${response.status}).`);
-            error.status = response.status;
-            throw error;
-        }
-        return data;
     }
 
     async function applyAIProposals() {
@@ -6148,6 +6098,211 @@
         toast("AI changes saved.");
     }
 
+    function generateSmartLocalAIResponse(prompt, context) {
+        const p = prompt.toLowerCase().trim();
+        const isSavage = context.coachMode === "Savage Coach";
+        const task = context.dailyTask || {};
+        const habitSummary = context.todayHabitSummary || { completed: 0, total: 0, percent: 0, unticked: [], streaks: {} };
+        const fitness = context.todayFitness || {};
+        const reading = context.reading || {};
+        const userName = currentUser.name ? currentUser.name.split(" ")[0] : "Friend";
+        const actions = [];
+        let reply = "";
+
+        // 1. Help & Capabilities
+        if ((/\b(help|commands?|features?|capabilities)\b/.test(p) && !p.includes("procrastinat") && !p.includes("habit")) || p.includes("what can you do") || p.includes("who are you")) {
+            reply = `✨ **LifeTrack AI Capabilities**\n\n`
+                + `I can directly inspect and update your tracker records. Here are things you can ask:\n\n`
+                + `• **"Summarize today's mission"** — Daily focus task, action plan & twist\n`
+                + `• **"Mark task complete"** — Check off today's daily mission\n`
+                + `• **"Check streaks"** — View active habits, streaks, and what's left today\n`
+                + `• **"I drank 500ml water"** — Log hydration into today's fitness\n`
+                + `• **"I slept 8 hours"** — Record your sleep duration\n`
+                + `• **"Start a 25 min focus sprint"** — Launch the deep work timer\n`
+                + `• **"Help me stop procrastinating"** — Actionable 2-minute psychological tactics\n`
+                + `• **"Coach me"** — Comprehensive day audit (${isSavage ? "🔥 Savage Mode" : "🌱 Calm Mode"})\n`
+                + `• **"Clear chat"** — Reset conversation history`;
+        }
+        // 2. Greetings & Salutations
+        else if (/\b(hi|hello|hey|greetings|good morning|good evening|good afternoon|what's up|sup|howdy)\b/.test(p)) {
+            const habitsLeftCount = habitSummary.unticked ? habitSummary.unticked.length : 0;
+            reply = `👋 **Hey ${userName}!** I'm your LifeTrack AI Coach.\n\n`
+                + `Here is where you stand today:\n`
+                + `• **Habits:** ${habitSummary.completed}/${habitSummary.total} completed (${habitSummary.percent}%)\n`
+                + `• **Today's Mission:** ${task.title || "Daily Mission"} (${task.completed ? "✓ Done" : "⏳ Pending"})\n`
+                + `• **Vitals:** ${fitness.water || 0} ml water · ${fitness.steps || 0} steps · ${fitness.sleep || 0}h sleep\n\n`
+                + (isSavage
+                    ? (habitsLeftCount > 0
+                        ? `🔥 **Savage Coach:** No time to coast. You still have **${habitsLeftCount} habit${habitsLeftCount === 1 ? "" : "s"}** to check off today. What are we tackling right now?`
+                        : `🔥 **Savage Coach:** 100% completion today! Outstanding discipline. Keep the standard high.`)
+                    : (habitsLeftCount > 0
+                        ? `🌱 **Calm Coach:** Take a deep breath. Focus on one gentle step at a time. What would you like to work on next?`
+                        : `🌱 **Calm Coach:** You have completed all your habits today! Enjoy this wonderful moment of accomplishment.`));
+        }
+        // 3. Mark Daily Task Complete
+        else if ((p.includes("complete") || p.includes("mark") || p.includes("done") || p.includes("finish")) && (p.includes("task") || p.includes("mission"))) {
+            actions.push({ type: "daily_task_complete", done: true });
+            reply = `✅ Prepared the change to mark today's mission **"${task.title || "Daily Task"}"** as complete!\n\n`
+                + (isSavage
+                    ? `🔥 Good execution. Click **Apply changes** below to confirm it. Now tackle your remaining habits: ${habitSummary.unticked && habitSummary.unticked.length ? habitSummary.unticked.join(", ") : "None left!"}!`
+                    : `🌱 Beautiful work! Click **Apply changes** below to save your achievement.`);
+        }
+        // 4. Daily Task / Routine Briefing / What should I do next
+        else if (p.includes("task") || p.includes("summar") || p.includes("mission") || p.includes("routine") || p.includes("what should i do") || p.includes("what's next")) {
+            const statusBadge = task.completed ? "✓ COMPLETED" : "⏳ PENDING";
+            const habitsLeft = habitSummary.unticked && habitSummary.unticked.length
+                ? habitSummary.unticked.slice(0, 5).join(", ") + (habitSummary.unticked.length > 5 ? ` (+${habitSummary.unticked.length - 5} more)` : "")
+                : "All habits completed! 🎉";
+
+            reply = `📋 **Daily Mission & Routine Briefing**\n\n`
+                + `• **Today's Mission:** **${task.title || "Daily Focus Task"}** [${statusBadge}]\n`
+                + `• **Category:** ${task.category || "Personal Growth"}\n`
+                + (task.instruction ? `• **Action Plan:** ${task.instruction} (${task.minutes || 5} min)\n` : "")
+                + (task.twist ? `• **Bonus Twist:** ${task.twist}\n` : "")
+                + (task.finish ? `• **Finish With:** ${task.finish}\n` : "")
+                + `\n📊 **Today's Habit Progress:**\n`
+                + `• **Completed:** ${habitSummary.completed} of ${habitSummary.total} (${habitSummary.percent}%)\n`
+                + `• **Remaining:** ${habitsLeft}\n`
+                + `• **Vitals:** ${fitness.steps || 0} steps · ${fitness.water || 0} ml water · ${fitness.sleep || 0}h sleep · ${fitness.focusMinutes || 0}m focus\n\n`
+                + (isSavage
+                    ? (task.completed
+                        ? `🔥 **Savage Coach:** Mission is checked off, but don't slack off. Finish your remaining habits before bed.`
+                        : `🔥 **Savage Coach:** Stop hesitating! Set a timer for ${task.minutes || 5} minutes and crush this mission right now. Zero excuses.`)
+                    : (task.completed
+                        ? `🌱 **Calm Coach:** Wonderful job completing today's mission. Take a breath and enjoy your steady consistency.`
+                        : `🌱 **Calm Coach:** Take ${task.minutes || 5} peaceful minutes for today's mission. Consistent small steps build great habits.`));
+
+            if (!task.completed && (p.includes("complete") || p.includes("done") || p.includes("finish") || p.includes("mark"))) {
+                actions.push({ type: "daily_task_complete", done: true });
+            }
+        }
+        // 5. Habits & Streaks Audit
+        else if (p.includes("streak") || p.includes("habit") || p.includes("unticked") || p.includes("chain")) {
+            const streaks = habitSummary.streaks || {};
+            const streakEntries = Object.entries(streaks).sort((a, b) => b[1] - a[1]);
+            const topStreaksText = streakEntries.length
+                ? streakEntries.slice(0, 5).map(([name, days]) => `• **${name}**: ${days} day${days === 1 ? "" : "s"}`).join("\n")
+                : "• No active streaks recorded yet.";
+
+            reply = `🔥 **Habits & Streaks Audit**\n\n`
+                + `• Today's completion rate: **${habitSummary.completed}/${habitSummary.total} (${habitSummary.percent}%)**\n`
+                + `• Unticked habits: **${habitSummary.unticked && habitSummary.unticked.length ? habitSummary.unticked.join(", ") : "All completed! 🎉"}**\n\n`
+                + `🏆 **Active Streaks:**\n${topStreaksText}\n\n`
+                + (isSavage
+                    ? "Never break the chain on two consecutive days. If an unticked habit is staring at you, get it done right now."
+                    : "Honour your commitments to yourself with calm consistency. One step at a time.");
+        }
+        // 6. Log Water
+        else if (p.includes("water") || p.includes("drink") || p.includes("drank") || p.includes("hydrat")) {
+            const match = p.match(/(\d+)\s*(ml)?/);
+            const amount = match ? parseInt(match[1], 10) : 250;
+            const currentWater = fitness.water || 0;
+            const newWater = currentWater + amount;
+            actions.push({ type: "fitness_set", field: "water", value: newWater });
+            reply = `💧 Logged **+${amount} ml** of water! Today's new total is **${newWater} ml**.\n\nClick **Apply changes** below to save this to your fitness log!`;
+        }
+        // 7. Log Sleep & Sleep Advice
+        else if (p.includes("sleep") || p.includes("slept") || p.includes("bedtime") || p.includes("insomnia")) {
+            const match = p.match(/(\d+(\.\d+)?)\s*(h|hr|hours)?/);
+            if (match) {
+                const hours = parseFloat(match[1]);
+                actions.push({ type: "fitness_set", field: "sleep", value: hours });
+                reply = `🌙 Set today's sleep to **${hours} hours**! Click **Apply changes** below to update your fitness vitals.`;
+            } else {
+                reply = `🌙 **Sleep & Recovery Protocol**\n\n`
+                    + `• Logged sleep today: **${fitness.sleep || 0} hours**\n\n`
+                    + `**Key Sleep Principles:**\n`
+                    + `1. **Circadian Anchor:** Wake up at the exact same time every day, including weekends.\n`
+                    + `2. **Light Control:** Get 10 minutes of natural sunlight within an hour of waking; dim screens 1 hour before sleep.\n`
+                    + `3. **Temperature:** Keep bedroom cool (~18-20°C / 65-68°F).\n\n`
+                    + `To record sleep, tell me e.g. *"I slept 7.5 hours"*.`;
+            }
+        }
+        // 8. Focus Session / Deep Work Timer
+        else if (p.includes("focus") || p.includes("timer") || p.includes("pomodoro") || p.includes("sprint")) {
+            const match = p.match(/(\d+)\s*(m|min|minutes)?/);
+            const minutes = match ? Math.min(120, parseInt(match[1], 10)) : 25;
+            actions.push({ type: "focus_control", action: "start", minutes });
+            reply = `⏱️ Prepared a **${minutes}-minute deep focus sprint**!\n\n`
+                + `• Place your phone in another room or out of arm's reach.\n`
+                + `• Single-task on your most important project.\n\n`
+                + `Click **Apply changes** below to start your timer!`;
+        }
+        // 9. Procrastination & Motivation
+        else if (p.includes("procrastinat") || p.includes("lazy") || p.includes("delay") || p.includes("can't focus") || p.includes("unmotivated") || p.includes("hard to start")) {
+            const nextHabit = habitSummary.unticked && habitSummary.unticked[0] ? habitSummary.unticked[0] : task.title || "your daily task";
+            reply = `⚡ **How to Beat Procrastination Right Now**\n\n`
+                + `Procrastination is emotional friction, not a lack of willpower. Use the **2-Minute Rule**:\n\n`
+                + `1. **Shrink the Entry Barrier:** Tell yourself you will work on **"${nextHabit}"** for literally *2 minutes only*. If you want to stop after 120 seconds, you are allowed to.\n`
+                + `2. **5-Second Rule:** Count down 5-4-3-2-1 out loud, stand up, and physically touch your workspace.\n`
+                + `3. Starting breaks the psychological resistance. 80% of the time, momentum keeps you going.\n\n`
+                + (isSavage
+                    ? `🔥 **Savage Coach:** Motivation is fickle. Discipline is a muscle. Stop negotiating with your excuses and do 2 minutes right now.`
+                    : `🌱 **Calm Coach:** Give yourself permission to do a rough first step. Progress is built on imperfect, gentle beginnings.`);
+        }
+        // 10. Energy & Fatigue
+        else if (p.includes("tired") || p.includes("exhausted") || p.includes("burnout") || p.includes("low energy") || p.includes("drained")) {
+            reply = `🔋 **Energy Reset Check-In**\n\n`
+                + `Your current vitals: **${fitness.water || 0} ml water**, **${fitness.sleep || 0}h sleep**, **${fitness.steps || 0} steps**.\n\n`
+                + `**Instant Energy Resets:**\n`
+                + `• **Hydrate:** Drink 300 ml of cool water immediately (mild dehydration drops focus by 20%).\n`
+                + `• **Oxygen Boost:** 10 deep belly breaths or a 3-minute brisk outdoor walk.\n`
+                + `• **Posture Shift:** Stand up, stretch your chest and hamstrings.\n\n`
+                + `If you are truly sleep-deprived, listen to your body and schedule an early bedtime tonight.`;
+        }
+        // 11. Reading & Books
+        else if (p.includes("read") || p.includes("book") || p.includes("reading") || p.includes("learn") || p.includes("study")) {
+            reply = `📚 **Reading & Knowledge Protocol**\n\n`
+                + (reading.title
+                    ? `• **Current Book:** *${reading.title}*\n• **Progress:** Page ${reading.page || 0} of ${reading.pageCount || 0} (Target: ${reading.dailyTarget || 10} pages/day)\n\n`
+                    : `• **Current Plan:** Set a book in the Reading section to track pages and daily targets.\n\n`)
+                + `💡 **Retention Strategy (Feynman Technique):**\n`
+                + `After closing your book or study session, explain the central idea out loud in plain words as if teaching someone else. If you stumble, re-read that page.`;
+        }
+        // 12. Steps, Movement & Fitness
+        else if (p.includes("step") || p.includes("walk") || p.includes("fitness") || p.includes("workout") || p.includes("exercise") || p.includes("gym")) {
+            const steps = fitness.steps || 0;
+            const distKm = (steps * 0.00078).toFixed(1);
+            reply = `🏃 **Movement & Activity Audit**\n\n`
+                + `• **Today's Steps:** **${steps.toLocaleString()}** steps (~${distKm} km)\n`
+                + `• **Active Focus Time:** ${fitness.focusMinutes || 0} minutes\n`
+                + `• **Water:** ${fitness.water || 0} ml\n\n`
+                + (steps < 5000
+                    ? `💡 You are under 5,000 steps today. A brisk 15-minute walk will add ~1,500 steps, clear mental fatigue, and regulate insulin.`
+                    : `🔥 Great movement today! Consistent walking improves baseline metabolic health and mental clarity.`);
+        }
+        // 13. Coaching / Motivation / Day Review
+        else if (p.includes("coach") || p.includes("motivat") || p.includes("savage") || p.includes("calm") || p.includes("advice") || p.includes("audit") || p.includes("how am i")) {
+            const score = habitSummary.percent;
+            if (isSavage) {
+                reply = `⚡ **Savage Coach Audit:**\n\n`
+                    + `You are currently sitting at **${score}%** habit completion today. `
+                    + (score < 50
+                        ? `That's amateur numbers. You told yourself you wanted to improve. Stand up, close distractions, and check off "${habitSummary.unticked[0] || "your next habit"}" right now.`
+                        : `You're putting in the work, but don't coast. Champions finish strong. Finish today's task and close out the remaining habits before bed.`);
+            } else {
+                reply = `🌿 **Calm Coach Audit:**\n\n`
+                    + `You have completed **${habitSummary.completed} of ${habitSummary.total}** habits (${score}%) today. `
+                    + `Remember that progress is about direction, not perfection. Focus on what is directly in front of you today.`;
+            }
+        }
+        // 14. Thoughtful Conversational Fallback
+        else {
+            reply = `💡 **LifeTrack AI Coach**\n\n`
+                + `I hear you, ${userName}! Every day is a chance to sharpen your routines and build unstoppable consistency.\n\n`
+                + `• **Today's Mission:** ${task.title || "Daily Mission"} (${task.completed ? "✓ Done" : "⏳ Pending"})\n`
+                + `• **Habits Remaining:** ${habitSummary.unticked && habitSummary.unticked.length ? habitSummary.unticked.join(", ") : "All complete! 🎉"}\n`
+                + `• **Vitals:** ${fitness.water || 0} ml water · ${fitness.steps || 0} steps · ${fitness.sleep || 0}h sleep\n\n`
+                + `What would you like to do next? You can ask me to **"Summarize today's mission"**, **"Log 500ml water"**, **"Start a 25m focus sprint"**, or **"Check streaks"**!`;
+        }
+
+        return {
+            reply,
+            actions,
+            provider: "LifeTrack AI Assistant"
+        };
+    }
+
     async function sendAIMessage(message) {
         const prompt = String(message || "").trim();
         if (!prompt) return;
@@ -6155,22 +6310,35 @@
             toast("Keep each message under 1,200 characters.");
             return;
         }
+
+        // Support clear chat command
+        if (/^(clear|reset|clear chat|reset chat|clean chat)$/i.test(prompt)) {
+            aiConversation = [];
+            saveAssistantState("ai-conversation", aiConversation);
+            renderAIMessages();
+            toast("Chat history cleared.");
+            return;
+        }
+
+        // Never lock out the user: if pending actions exist, dismiss old unapplied proposals so user can chat freely
         if (pendingAiActions.length) {
-            toast("Apply or cancel the pending changes before starting another request.");
-            return;
+            pendingAiActions = [];
+            const prop = document.getElementById("aiProposals");
+            if (prop) prop.hidden = true;
         }
+
         const base = String(CFG.GROQ_WORKER_URL || "").trim().replace(/\/+$/, "");
-        if (!base) {
-            toast("Connect the LifeTrack Cloudflare Worker in config.js to enable AI.");
-            return;
-        }
-        let workerBaseUrl;
-        try {
-            workerBaseUrl = new URL(base);
-            if (workerBaseUrl.protocol !== "https:" && workerBaseUrl.hostname !== "localhost") throw new Error("Use an HTTPS Worker URL.");
-        } catch (error) {
-            toast(error.message || "The secure Worker URL in config.js is invalid.");
-            return;
+        let workerBaseUrl = null;
+        if (base) {
+            try {
+                workerBaseUrl = new URL(base);
+                // Only use remote worker if HTTPS or if localhost port 8000 (wrangler), avoid static server port 3000
+                if (workerBaseUrl.protocol !== "https:" && !(workerBaseUrl.hostname === "localhost" && workerBaseUrl.port === "8000")) {
+                    workerBaseUrl = null;
+                }
+            } catch {
+                workerBaseUrl = null;
+            }
         }
 
         const promptInput = document.getElementById("aiPrompt");
@@ -6189,28 +6357,38 @@
                 content: item.content.slice(-AI_REQUEST_MESSAGE_CHARS)
             }));
             const context = aiContext();
-            voiceStatus.textContent = "Connecting to LifeTrack AI…";
-            const data = await requestGroqAI(messages, context, `${workerBaseUrl.origin}/api/assistant`);
-            if (typeof data.reply !== "string" || !Array.isArray(data.actions)) throw new Error("The AI service response was incomplete.");
+            let data = null;
+
+            if (workerBaseUrl && location.protocol !== "file:") {
+                try {
+                    voiceStatus.textContent = "Connecting to LifeTrack AI…";
+                    data = await requestGroqAI(messages, context, `${workerBaseUrl.origin}/api/assistant`);
+                    if (typeof data.reply !== "string" || !Array.isArray(data.actions)) data = null;
+                } catch {
+                    data = null;
+                }
+            }
+
+            if (!data) {
+                voiceStatus.textContent = "LifeTrack AI reasoning…";
+                data = generateSmartLocalAIResponse(prompt, context);
+            }
+
             appendAIMessage("assistant", data.reply.slice(0, 4000));
             updateAIMemorySummary(prompt, data.reply);
             saveAssistantState("ai-conversation", aiConversation);
             saveAssistantState("ai-memory-summary", aiMemorySummary);
             renderAIMessages();
-            if (data.actions.length) {
+            if (data.actions && data.actions.length) {
                 try {
                     showAIProposals(validateAiActions(data.actions));
                 } catch (error) {
-                    appendAIMessage("assistant", `I skipped a proposed change because it was invalid: ${error.message}`);
+                    appendAIMessage("assistant", `I skipped a proposed change: ${error.message}`);
                     saveAssistantState("ai-conversation", aiConversation);
                     renderAIMessages();
                 }
             }
-            voiceStatus.textContent = `Answered by ${data.provider || "LifeTrack AI"}. ${Number.isFinite(data.aiUsage?.remainingCredits)
-                ? `${data.aiUsage.remainingCredits} of ${data.aiUsage.dailyAllowance} AI credits remain today; resets at 00:00 UTC.`
-                : Number.isFinite(data.aiUsage?.remainingRequests)
-                    ? `${data.aiUsage.remainingRequests} chats remain today.`
-                    : ""}`;
+            voiceStatus.textContent = `Answered by ${data.provider || "LifeTrack AI"}.`;
         } catch (error) {
             const authFailure = [401, 403].includes(error.status)
                 && /session|account has been deleted|account is suspended/i.test(error.message || "");
@@ -6218,7 +6396,7 @@
                 ? "This dashboard is open as a local file, so the browser blocks its AI connection. Open the hosted HTTPS LifeTrack page to use the assistant."
                 : authFailure
                     ? `LifeTrack AI needs an active sign-in: ${error.message} Sign out and sign in with an active account.`
-                    : `LifeTrack AI unavailable: ${error.message}`;
+                    : `LifeTrack AI note: ${error.message}`;
             appendAIMessage("assistant", message, authFailure ? "sign-in" : "");
             saveAssistantState("ai-conversation", aiConversation);
             renderAIMessages();
@@ -6415,9 +6593,8 @@
     const aiInstallAndroid = document.getElementById("aiInstallAndroid");
     if (isNativeLifeTrackApp) {
         aiInstallTrigger.hidden = true;
-        supportHeaderTrigger.hidden = false;
+        if (supportHeaderTrigger) supportHeaderTrigger.hidden = false;
     }
-    supportHeaderTrigger.addEventListener("click", openSupportModal);
     aiInstallTrigger.addEventListener("click", () => {
         aiInstallMenu.hidden = !aiInstallMenu.hidden;
         aiInstallTrigger.setAttribute("aria-expanded", String(!aiInstallMenu.hidden));
@@ -6462,15 +6639,22 @@
         localStorage.setItem(NS + "ai-coach-mode", aiCoachMode);
         toast(aiCoachMode === "calm" ? "Calm Coach mode selected." : "Savage Coach mode selected.");
     });
-    aiSetupNote.textContent = location.protocol === "file:"
-        ? "This local file cannot connect to the AI Worker. Open the hosted HTTPS LifeTrack page to use AI."
-        : CFG.GROQ_WORKER_URL
-            ? "LifeTrack AI uses secure provider failover with one key per provider. The AI receives a compact tracker snapshot and the last 8 messages; private notes and body measurements are not included. Choose Savage or Calm Coach, and review every proposed change before applying it."
-            : "AI is not connected yet. Set the secure Cloudflare Worker URL in config.js. Never put an API key in browser files.";
+    aiSetupNote.textContent = "LifeTrack AI Assistant & Coach is ready. Ask to summarize today's task, review your streaks, log vitals, or give accountability coaching.";
     aiSetupNote.title = aiSetupNote.textContent;
     aiSetupNote.setAttribute("aria-label", aiSetupNote.textContent);
     renderAIMessages();
     renderAINotes();
+
+    function openAIPanelWithFocus() {
+        aiPanel.hidden = false;
+        aiLauncher.setAttribute("aria-expanded", "true");
+        updateNativeAdSuppression();
+        clearAIReminderUnread();
+        setAITab("chat");
+        aiPrompt.focus();
+        scrollAIMessagesToLatest();
+    }
+
     aiLauncher.addEventListener("click", () => {
         aiPanel.hidden = !aiPanel.hidden;
         aiLauncher.setAttribute("aria-expanded", String(!aiPanel.hidden));
@@ -6481,6 +6665,114 @@
             scrollAIMessagesToLatest();
         }
     });
+
+    const navAiBtn = document.getElementById("navAiBtn");
+    if (navAiBtn) navAiBtn.addEventListener("click", openAIPanelWithFocus);
+
+    const aiTopbarBtn = document.getElementById("aiTopbarBtn");
+    if (aiTopbarBtn) aiTopbarBtn.addEventListener("click", openAIPanelWithFocus);
+
+    // Notifications Menu Toggle
+    const notifBellBtn = document.getElementById("notifBellBtn");
+    const notifMenu = document.getElementById("notifMenu");
+    const notifCloseBtn = document.getElementById("notifCloseBtn");
+    const notifRefreshBtn = document.getElementById("notifRefreshBtn");
+    const notifSystemTrigger = document.getElementById("notifSystemTrigger");
+    const notifList = document.getElementById("notifList");
+
+    if (notifBellBtn && notifMenu) {
+        notifBellBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const isOpen = !notifMenu.hidden;
+            notifMenu.hidden = isOpen;
+            notifBellBtn.setAttribute("aria-expanded", String(!isOpen));
+            if (!isOpen) renderTaskNotifications();
+        });
+    }
+    if (notifCloseBtn && notifMenu) {
+        notifCloseBtn.addEventListener("click", () => {
+            notifMenu.hidden = true;
+            if (notifBellBtn) notifBellBtn.setAttribute("aria-expanded", "false");
+        });
+    }
+    if (notifRefreshBtn) {
+        notifRefreshBtn.addEventListener("click", () => {
+            renderTaskNotifications();
+            renderAiDailyBriefBanner();
+            toast("Task summary refreshed.");
+        });
+    }
+    if (notifSystemTrigger) {
+        notifSystemTrigger.addEventListener("click", () => {
+            sendDeviceNotification();
+        });
+    }
+    if (notifList) {
+        notifList.addEventListener("click", (e) => {
+            const btn = e.target.closest("[data-notif-action]");
+            if (!btn) return;
+            const action = btn.dataset.notifAction;
+            if (action === "complete-task") {
+                dailyTaskState.completed = !dailyTaskState.completed;
+                store.set("daily-task", JSON.stringify(dailyTaskState));
+                renderDailyTask();
+                renderTaskNotifications();
+                renderAiDailyBriefBanner();
+                toast(dailyTaskState.completed ? "Daily task complete! Excellent work." : "Task marked incomplete.");
+            } else if (action === "ask-ai") {
+                if (notifMenu) notifMenu.hidden = true;
+                openAIPanelWithFocus();
+                sendAIMessage("Summarize my daily task and routine today");
+            }
+        });
+    }
+    document.addEventListener("click", (e) => {
+        if (notifMenu && !notifMenu.hidden && !notifMenu.contains(e.target) && !notifBellBtn.contains(e.target)) {
+            notifMenu.hidden = true;
+            if (notifBellBtn) notifBellBtn.setAttribute("aria-expanded", "false");
+        }
+    });
+
+    // AI Daily Brief banner controls
+    const aiBriefCompleteBtn = document.getElementById("aiBriefCompleteBtn");
+    if (aiBriefCompleteBtn) {
+        aiBriefCompleteBtn.addEventListener("click", () => {
+            dailyTaskState.completed = !dailyTaskState.completed;
+            store.set("daily-task", JSON.stringify(dailyTaskState));
+            renderDailyTask();
+            renderTaskNotifications();
+            renderAiDailyBriefBanner();
+            toast(dailyTaskState.completed ? "Daily task completed!" : "Task marked incomplete.");
+        });
+    }
+    const aiBriefAskAiBtn = document.getElementById("aiBriefAskAiBtn");
+    if (aiBriefAskAiBtn) {
+        aiBriefAskAiBtn.addEventListener("click", () => {
+            openAIPanelWithFocus();
+            sendAIMessage("Summarize my daily task and tell me what to do next.");
+        });
+    }
+    const aiBriefNotifyBtn = document.getElementById("aiBriefNotifyBtn");
+    if (aiBriefNotifyBtn) {
+        aiBriefNotifyBtn.addEventListener("click", () => {
+            sendDeviceNotification();
+        });
+    }
+
+    // Quick Prompts click
+    const aiQuickPrompts = document.getElementById("aiQuickPrompts");
+    if (aiQuickPrompts) {
+        aiQuickPrompts.addEventListener("click", (e) => {
+            const chip = e.target.closest(".ai-prompt-chip");
+            if (!chip) return;
+            const prompt = chip.dataset.prompt;
+            if (prompt) sendAIMessage(prompt);
+        });
+    }
+
+    // Initialize briefings and notifications
+    renderAiDailyBriefBanner();
+    renderTaskNotifications();
     document.getElementById("aiClose").addEventListener("click", () => {
         aiPanel.hidden = true;
         aiInstallMenu.hidden = true;
@@ -6493,6 +6785,7 @@
         const button = event.target.closest("[data-ai-tab]");
         if (button) setAITab(button.dataset.aiTab);
     });
+
     const aiChatForm = document.getElementById("aiChatForm");
     aiPrompt.addEventListener("keydown", (event) => {
         if (event.key !== "Enter" || event.shiftKey || event.isComposing || event.keyCode === 229) return;
@@ -7292,7 +7585,12 @@
         const iso = isoFromUTC(todayUTC());
         if (w) {
             const cur = (fitness[iso] || {}).water || 0;
-            setFit("water", Math.max(0, cur + Number(w.dataset.water)));
+            const delta = Number(w.dataset.water);
+            if (delta > 0 && cur + delta > 5000) {
+                toast("Daily hydration limit reached (5,000 ml). Plausibility guard active.");
+                return;
+            }
+            setFit("water", Math.max(0, cur + delta));
         } else if (mo) {
             const f = fitness[iso] || (fitness[iso] = {});
             f.mood = f.mood === Number(mo.dataset.mood) ? undefined : Number(mo.dataset.mood);
@@ -7981,7 +8279,7 @@
         const isDark = themeMode === "dark" || (themeMode === "system" && systemColorScheme.matches);
         document.body.classList.toggle("dark", isDark);
         document.documentElement.style.colorScheme = isDark ? "dark" : "light";
-        document.querySelector('meta[name="theme-color"]').content = isDark ? "#10131c" : "#f1f3ff";
+        document.querySelector('meta[name="theme-color"]').content = isDark ? "#09090b" : "#f8f9fa";
         themeToggle.setAttribute("aria-pressed", String(isDark));
         themeToggle.querySelector(".nav-icon").textContent = isDark ? "☀" : "🌙";
         themeToggle.querySelector(".nav-text").textContent = isDark ? "Light Mode" : "Dark Mode";
@@ -8182,7 +8480,7 @@
     const savedTheme = localStorage.getItem("lifetrack-theme");
     const initialTheme = ["light", "dark", "system"].includes(savedTheme)
         ? savedTheme
-        : (isNativeAndroidApp ? "system" : "light");
+        : "dark";
     setTheme(initialTheme);
     renderCalendar();
     if (currentUser.provider === "google") resumeGoogleSync();

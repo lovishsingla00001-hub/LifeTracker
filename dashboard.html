@@ -28,8 +28,8 @@
             }
         }
     </script>
-    <meta name="theme-color" content="#f1f3ff">
-    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#09090b">
+    <meta name="color-scheme" content="dark light">
     <script src="config.js"></script>
     <script src="app-redirect.js"></script>
     <script src="adsense.js" defer></script>
@@ -38,9 +38,22 @@
     <script src="pwa.js" defer></script>
     <link rel="icon" type="image/png" href="lifetrack-logo.png?v=2" sizes="120x120" media="(prefers-color-scheme: light)" data-theme-icon="light">
     <link rel="icon" type="image/png" href="lifetrack-logo-dark.png?v=2" sizes="120x120" media="(prefers-color-scheme: dark)" data-theme-icon="dark">
-    <link rel="stylesheet" href="dashboard.css?v=88">
+    <link rel="stylesheet" href="dashboard.css?v=91">
 </head>
-<body>
+<body class="dark">
+<script>
+    (function () {
+        const saved = localStorage.getItem("lifetrack-theme");
+        if (saved === "light" || (saved === "system" && !window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.body.classList.remove("dark");
+            document.documentElement.style.colorScheme = "light";
+            const m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.content = "#f8f9fa";
+        } else {
+            document.documentElement.style.colorScheme = "dark";
+        }
+    })();
+</script>
 <div id="pullRefreshIndicator" class="pull-refresh-indicator" role="status" aria-live="polite" aria-hidden="true">
     <span class="pull-refresh-glyph" aria-hidden="true">↓</span>
     <span id="pullRefreshLabel">Pull to refresh</span>
@@ -59,6 +72,7 @@
             <button type="button" class="nav-item" data-section="goals" title="Goals"><span class="nav-icon">🎯</span><span class="nav-text">Goals</span></button>
             <button type="button" class="nav-item" data-section="analytics" title="Analytics"><span class="nav-icon">📈</span><span class="nav-text">Analytics</span></button>
             <button type="button" class="nav-item" data-section="friends" title="Friends"><span class="nav-icon">🏆</span><span class="nav-text">Friends</span></button>
+            <button type="button" class="nav-item nav-ai-item" id="navAiBtn" title="LifeTrack AI Assistant"><span class="nav-icon">✨</span><span class="nav-text">AI Assistant</span></button>
         </nav>
         <div class="sidebar-bottom">
             <button type="button" id="themeToggle" class="theme-button" aria-pressed="true" title="Change appearance"><span class="nav-icon">☀</span><span class="nav-text">Light Mode</span></button>
@@ -70,12 +84,18 @@
                 <strong id="androidUpdateTitle">LifeTrack Android update available</strong>
                 <p id="androidUpdateMessage">Open the download in your browser, then confirm Install to update LifeTrack.</p>
             </div>
-            <a id="androidUpdateDownload" href="./worker/site/lifetrack-android-sonic.apk">Download update</a>
+            <a id="androidUpdateDownload" href="./lifetrack-android.apk">Download update</a>
         </section>
         <header class="topbar">
             <div>
                 <span class="eyebrow">PERSONAL DEVELOPMENT SYSTEM</span>
-                <h1 id="pageTitle">Dashboard</h1>
+                <div class="page-title-row">
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <div class="data-integrity-badge" id="dataIntegrityBadge" title="Anti-fake data protection is active: device reading verification, burst checking rate limits, and plausibility guardrails.">
+                        <span class="integrity-dot"></span>
+                        <span class="integrity-text">Verified Integrity Guard</span>
+                    </div>
+                </div>
             </div>
 
             <div class="top-actions">
@@ -101,6 +121,39 @@
                     <option>2028</option>
                     <option>2029</option>
                 </select>
+
+                <button type="button" class="topbar-action-btn ai-topbar-btn" id="aiTopbarBtn" aria-label="Open AI Assistant" title="Open AI Assistant">
+                    <span class="ai-sparkle-icon" aria-hidden="true">✨</span>
+                    <span class="ai-topbar-label">AI Coach</span>
+                </button>
+
+                <div class="notifications-wrapper">
+                    <button type="button" class="topbar-action-btn notif-bell-btn" id="notifBellBtn" aria-label="Daily Task Notifications" title="Daily Task Summaries" aria-expanded="false" aria-controls="notifMenu">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span id="notifBadge" class="notif-badge" aria-label="1 unread notification">1</span>
+                    </button>
+                    <section id="notifMenu" class="notifications-menu" aria-label="Task Notifications" hidden>
+                        <header class="notif-header">
+                            <div>
+                                <strong>Daily Briefing</strong>
+                                <small id="notifSubtitle">Task &amp; habit intelligence</small>
+                            </div>
+                            <div class="notif-header-actions">
+                                <button type="button" id="notifRefreshBtn" class="notif-header-btn" title="Refresh task summary">↻</button>
+                                <button type="button" id="notifCloseBtn" class="notif-header-btn" aria-label="Close notifications">×</button>
+                            </div>
+                        </header>
+                        <div id="notifList" class="notif-list"></div>
+                        <footer class="notif-footer">
+                            <button type="button" id="notifSystemTrigger" class="notif-system-btn">
+                                <span>🔔 Send Device Notification</span>
+                            </button>
+                        </footer>
+                    </section>
+                </div>
 
                 <button type="button" class="user-info user-chip" id="userChip" aria-haspopup="menu" aria-controls="profileMenu" title="Profile &amp; account">
                     <span id="userName" class="user-name">User</span>
@@ -236,6 +289,25 @@
                     <label for="lifeScoreWeightTask"><span>Daily task <output id="lifeScoreWeightTaskValue">10%</output></span><input id="lifeScoreWeightTask" data-score-weight="task" type="range" min="0" max="100" step="5" value="10"></label>
                 </details>
             </dialog>
+
+            <section id="aiDailyBriefBanner" class="ai-daily-brief-banner" aria-label="AI Daily Task Summary">
+                <div class="ai-brief-glow" aria-hidden="true"></div>
+                <div class="ai-brief-main">
+                    <div class="ai-brief-badge-row">
+                        <span class="ai-brief-pill"><span class="ai-sparkle">✨</span> AI DAILY BRIEF</span>
+                        <span class="ai-brief-date" id="aiBriefDate"></span>
+                        <span class="ai-brief-status-tag" id="aiBriefStatusTag">Pending</span>
+                    </div>
+                    <h3 id="aiBriefTitle">Today's Mission</h3>
+                    <p id="aiBriefSummary">Loading task summary…</p>
+                    <div class="ai-brief-metrics" id="aiBriefMetrics"></div>
+                </div>
+                <div class="ai-brief-actions">
+                    <button type="button" id="aiBriefCompleteBtn" class="ai-brief-btn primary">✓ Complete Task</button>
+                    <button type="button" id="aiBriefAskAiBtn" class="ai-brief-btn secondary">✨ Chat with AI</button>
+                    <button type="button" id="aiBriefNotifyBtn" class="ai-brief-btn ghost" title="Send notification to device">🔔 Notify</button>
+                </div>
+            </section>
 
             <div class="main-grid">
                 <div class="panel habit-panel">
@@ -532,7 +604,6 @@
         </span>
         <div><strong>LifeTrack AI</strong><small>Full tracker controls · review before apply</small></div>
         <button type="button" class="ai-install-trigger" id="aiInstallTrigger" aria-label="Install LifeTrack" aria-expanded="false" aria-controls="aiInstallMenu" title="Install LifeTrack">Install</button>
-        <button type="button" class="support-header-trigger" id="supportHeaderTrigger" aria-label="Support LifeTrack" title="Support LifeTrack" hidden>₹</button>
         <button type="button" class="ai-close" id="aiClose" aria-label="Close AI assistant">×</button>
     </header>
     <div id="aiInstallMenu" class="ai-install-menu" role="group" aria-label="Install LifeTrack" hidden>
@@ -562,6 +633,13 @@
         </div>
         <div id="aiMessages" class="ai-messages" aria-live="polite"></div>
         <div id="aiProposals" class="ai-proposals" hidden></div>
+        <div class="ai-quick-prompts" id="aiQuickPrompts" role="group" aria-label="Quick AI prompts">
+            <button type="button" class="ai-prompt-chip" data-prompt="Summarize my daily task and routine today">📋 Summarize Today</button>
+            <button type="button" class="ai-prompt-chip" data-prompt="What are my current streaks and what habits are left today?">🔥 Check Streaks</button>
+            <button type="button" class="ai-prompt-chip" data-prompt="Mark today's daily task as complete">✓ Complete Task</button>
+            <button type="button" class="ai-prompt-chip" data-prompt="I drank 250 ml of water">💧 Log Water</button>
+            <button type="button" class="ai-prompt-chip" data-prompt="Give me savage coaching advice to stay on track today">⚡ Coach Me</button>
+        </div>
         <form id="aiChatForm" class="ai-compose">
             <textarea id="aiPrompt" rows="2" maxlength="1200" placeholder="Ask about habits, fitness, reading, focus, or goals…" aria-label="Message the AI assistant"></textarea>
             <div class="ai-compose-actions">
@@ -601,7 +679,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script src="qrcode.js"></script>
-<script src="dashboard.js?v=135"></script>
+<script src="dashboard.js?v=138"></script>
 <script>
     if ("serviceWorker" in navigator && !window.LT_REDIRECTING && location.protocol !== "file:") {
         try {

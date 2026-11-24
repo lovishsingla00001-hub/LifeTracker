@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>LifeTrack by Sonic | Free Habit &amp; Wellness Tracker</title>
-    <meta name="description" content="Discover LifeTrack, a free habit and wellness tracker created by Sonic. Build routines, track goals, reading, focus, fitness and daily progress.">
+    <meta name="description"
+        content="Discover LifeTrack, a free habit and wellness tracker created by Sonic. Build routines, track goals, reading, focus, fitness and daily progress.">
     <meta name="author" content="Sonic">
     <link rel="canonical" href="https://lifetrack.surajshukla22051.workers.dev/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="LifeTrack">
     <meta property="og:title" content="LifeTrack by Sonic | Free Habit Tracker">
-    <meta property="og:description" content="Build routines and track habits, goals, reading, focus and wellness with LifeTrack.">
+    <meta property="og:description"
+        content="Build routines and track habits, goals, reading, focus and wellness with LifeTrack.">
     <meta property="og:url" content="https://lifetrack.surajshukla22051.workers.dev/">
     <meta name="twitter:card" content="summary">
     <script type="application/ld+json">
@@ -29,21 +32,37 @@
         }
     </script>
     <meta name="google-site-verification" content="VUvUIpObcq8B8fJxpyTdOtFRyDV-gneoDYOLW3EzlEM">
-    <meta name="theme-color" content="#f1f3ff">
-    <meta name="color-scheme" content="light dark">
-    <link rel="icon" type="image/png" href="lifetrack-logo.png?v=2" media="(prefers-color-scheme: light)" data-theme-icon="light">
-    <link rel="icon" type="image/png" href="lifetrack-logo-dark.png?v=2" media="(prefers-color-scheme: dark)" data-theme-icon="dark">
+    <meta name="theme-color" content="#09090b">
+    <meta name="color-scheme" content="dark light">
+    <link rel="icon" type="image/png" href="lifetrack-logo.png?v=2" media="(prefers-color-scheme: light)"
+        data-theme-icon="light">
+    <link rel="icon" type="image/png" href="lifetrack-logo-dark.png?v=2" media="(prefers-color-scheme: dark)"
+        data-theme-icon="dark">
     <link rel="apple-touch-icon" href="lifetrack-logo-192.png?v=2">
     <link rel="manifest" href="manifest.webmanifest">
     <script src="config.js"></script>
     <script src="app-redirect.js"></script>
     <script src="pwa.js" defer></script>
-    <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="dashboard.css?v=91">
+    <link rel="stylesheet" href="auth.css?v=86">
 </head>
-<body class="auth-body">
 
-    <button type="button" class="auth-theme-toggle" id="authThemeToggle" aria-label="Toggle dark mode">🌙</button>
+<body class="auth-body dark">
+    <script>
+        (function () {
+            const saved = localStorage.getItem("lifetrack-theme");
+            if (saved === "light" || (saved === "system" && !window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+                document.body.classList.remove("dark");
+                document.documentElement.style.colorScheme = "light";
+                const m = document.querySelector('meta[name="theme-color"]');
+                if (m) m.content = "#f8f9fa";
+            } else {
+                document.documentElement.style.colorScheme = "dark";
+            }
+        })();
+    </script>
+
+    <button type="button" class="auth-theme-toggle" id="authThemeToggle" aria-label="Toggle dark mode">☀</button>
 
     <div class="auth-layout">
         <main class="auth-card">
@@ -72,7 +91,16 @@
 
             <div class="auth-providers" aria-label="Sign in options">
                 <button type="button" class="auth-google" id="googleBtn">
-                    <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 12-2.1 16-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
+                    <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
+                        <path fill="#EA4335"
+                            d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z" />
+                        <path fill="#4285F4"
+                            d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z" />
+                        <path fill="#FBBC05"
+                            d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z" />
+                        <path fill="#34A853"
+                            d="M24 48c6.5 0 12-2.1 16-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z" />
+                    </svg>
                     Continue with Google
                 </button>
                 <button type="button" class="auth-apple" id="appleBtn">Continue with Apple</button>
@@ -87,7 +115,8 @@
 
                 <div class="auth-field">
                     <label for="authPassword">Password</label>
-                    <input id="authPassword" type="password" placeholder="Your password" autocomplete="current-password" required>
+                    <input id="authPassword" type="password" placeholder="Your password" autocomplete="current-password"
+                        required>
                 </div>
 
                 <div class="auth-field" id="authNameField" hidden>
@@ -100,7 +129,8 @@
                         <input type="checkbox" id="authRemember" checked>
                         Remember me
                     </label>
-                    <span id="authModeSwitch" style="cursor:pointer; color:var(--primary); font-weight:700;">New here? Create account</span>
+                    <span id="authModeSwitch" style="cursor:pointer; color:var(--primary); font-weight:700;">New here?
+                        Create account</span>
                 </div>
 
                 <button type="submit" class="primary-button auth-submit" id="authSubmitBtn">Log In</button>
@@ -114,372 +144,389 @@
                     <img src="lifetrack-logo.png" alt="">
                     <span>LifeTrack</span>
                 </div>
-                <nav aria-label="LifeTrack features">Your Health <span>•</span> Your Goals <span>•</span> Your Life</nav>
+                <nav aria-label="LifeTrack features">Your Health <span>•</span> Your Goals <span>•</span> Your Life
+                </nav>
             </div>
 
             <div class="auth-showcase-content">
                 <p class="auth-showcase-eyebrow">YOUR PERSONAL WELLNESS SPACE</p>
                 <h2 id="authShowcaseTitle">Track your life.<br>Reach your <span>goals.</span></h2>
-                <p class="auth-showcase-copy">Build better routines and bring your everyday progress together in one place.</p>
+                <p class="auth-showcase-copy">Build better routines and bring your everyday progress together in one
+                    place.</p>
 
                 <div class="auth-feature-list" aria-label="LifeTrack features">
                     <article class="auth-feature">
                         <span class="auth-feature-icon" aria-hidden="true">01</span>
-                        <div><h3>Habits</h3><p>Make small routines stick.</p></div>
+                        <div>
+                            <h3>Habits</h3>
+                            <p>Make small routines stick.</p>
+                        </div>
                         <span class="auth-feature-arrow" aria-hidden="true">↗</span>
                     </article>
                     <article class="auth-feature">
                         <span class="auth-feature-icon" aria-hidden="true">02</span>
-                        <div><h3>Goals</h3><p>Turn plans into progress.</p></div>
+                        <div>
+                            <h3>Goals</h3>
+                            <p>Turn plans into progress.</p>
+                        </div>
                         <span class="auth-feature-arrow" aria-hidden="true">↗</span>
                     </article>
                     <article class="auth-feature">
                         <span class="auth-feature-icon" aria-hidden="true">03</span>
-                        <div><h3>Wellness</h3><p>Notice your daily patterns.</p></div>
+                        <div>
+                            <h3>Wellness</h3>
+                            <p>Notice your daily patterns.</p>
+                        </div>
                         <span class="auth-feature-arrow" aria-hidden="true">↗</span>
                     </article>
                 </div>
             </div>
 
-            <p class="auth-showcase-note">Google sign-in backs up your data to private Drive app storage. Apple sign-in keeps data on this device.</p>
+            <p class="auth-showcase-note">Google sign-in backs up your data to private Drive app storage. Apple sign-in
+                keeps data on this device.</p>
             <div class="auth-showcase-orbit" aria-hidden="true"></div>
         </aside>
     </div>
 
     <footer class="auth-footer">
-        Google sign-in keeps your LifeTrack data in your private Google Drive app storage. Apple, name, and guest accounts keep data on this device.
+        Google sign-in keeps your LifeTrack data in your private Google Drive app storage. Apple, name, and guest
+        accounts keep data on this device.
         <a href="install.html">Download LifeTrack</a>
         <a href="privacy.html">Privacy policy</a>
         <a href="terms.html">Terms of Service</a>
     </footer>
 
-<script>
-(function () {
-    "use strict";
-    if (window.LT_REDIRECTING) return;
+    <script>
+        (function () {
+            "use strict";
+            if (window.LT_REDIRECTING) return;
 
-    // ---- theme (shared "lifetrack-theme" key with the dashboard) ----
-    const themeBtn = document.getElementById("authThemeToggle");
+            // ---- theme (shared "lifetrack-theme" key with the dashboard) ----
+            const themeBtn = document.getElementById("authThemeToggle");
 
-    function setTheme(isDark) {
-        document.body.classList.toggle("dark", isDark);
-        document.documentElement.style.colorScheme = isDark ? "dark" : "light";
-        document.querySelector('meta[name="theme-color"]').content = isDark ? "#05070c" : "#f1f3ff";
-        themeBtn.textContent = isDark ? "☀" : "🌙";
-        document.querySelectorAll("[data-theme-icon]").forEach((icon) => {
-            icon.media = icon.dataset.themeIcon === (isDark ? "dark" : "light") ? "all" : "not all";
-        });
-        const nativeBridge = window.LifeTrackNativeReminders;
-        if (nativeBridge && typeof nativeBridge.setSystemTheme === "function") {
-            nativeBridge.setSystemTheme(isDark ? "dark" : "light", document.querySelector('meta[name="theme-color"]').content);
-        }
-        localStorage.setItem("lifetrack-theme", isDark ? "dark" : "light");
-    }
-    themeBtn.addEventListener("click", () => setTheme(!document.body.classList.contains("dark")));
-    setTheme(localStorage.getItem("lifetrack-theme") === "dark");
-
-    const callbackError = document.getElementById("authError");
-    const authQuery = new URLSearchParams(window.location.search);
-    const googleErrors = {
-        state: "Google sign-in could not be verified. Please try again.",
-        expired_state: "Google sign-in timed out. Please try again.",
-        refresh_token: "Google did not provide ongoing access. Please sign in again and approve the requested access.",
-        drive_scope: "Allow Google Drive app-data access to enable secure syncing.",
-        authorization: "Google sign-in could not be completed. Check Worker and OAuth configuration, then try again."
-    };
-    const appleErrors = {
-        not_configured: "Apple sign-in is not ready yet. The site owner must finish Apple Developer setup.",
-        state: "Apple sign-in could not be verified. Please try again.",
-        expired_state: "Apple sign-in timed out. Please try again.",
-        cancelled: "Apple sign-in was cancelled.",
-        authorization: "Apple sign-in could not be completed. Please try again."
-    };
-    if (authQuery.has("googleError")) {
-        callbackError.textContent = googleErrors[authQuery.get("googleError")] || "Google sign-in could not be completed. Please try again.";
-        callbackError.classList.add("show");
-    }
-    if (authQuery.has("appleError")) {
-        callbackError.textContent = appleErrors[authQuery.get("appleError")] || "Apple sign-in could not be completed. Please try again.";
-        callbackError.classList.add("show");
-    }
-    if (authQuery.get("google") === "connected" || authQuery.get("apple") === "connected") {
-        const expectedProvider = authQuery.get("apple") === "connected" ? "apple" : "google";
-        fetch("/api/auth/session", { credentials: "same-origin", cache: "no-store" })
-            .then(async (response) => {
-                if (!response.ok) throw new Error(`Session setup failed (HTTP ${response.status}).`);
-                const session = await response.json();
-                if (!session.user || session.user.provider !== expectedProvider || !session.user.uid) {
-                    throw new Error(`${expectedProvider} did not return a valid LifeTrack account.`);
+            function setTheme(isDark) {
+                document.body.classList.toggle("dark", isDark);
+                document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+                document.querySelector('meta[name="theme-color"]').content = isDark ? "#09090b" : "#f8f9fa";
+                themeBtn.textContent = isDark ? "☀" : "🌙";
+                document.querySelectorAll("[data-theme-icon]").forEach((icon) => {
+                    icon.media = icon.dataset.themeIcon === (isDark ? "dark" : "light") ? "all" : "not all";
+                });
+                const nativeBridge = window.LifeTrackNativeReminders;
+                if (nativeBridge && typeof nativeBridge.setSystemTheme === "function") {
+                    nativeBridge.setSystemTheme(isDark ? "dark" : "light", document.querySelector('meta[name="theme-color"]').content);
                 }
-                const rememberedUser = JSON.parse(localStorage.getItem("lifetrack-user") || "null");
-                if (expectedProvider === "apple" && rememberedUser && rememberedUser.uid === session.user.uid) {
-                    if (rememberedUser.name) session.user.name = rememberedUser.name;
-                    if (!session.user.email && rememberedUser.email) session.user.email = rememberedUser.email;
-                }
-                localStorage.setItem("lifetrack-user", JSON.stringify(session.user));
-                localStorage.setItem("lifetrack-remember-name", session.user.name);
-                window.location.replace("dashboard.html");
-            })
-            .catch((error) => {
-                console.error(`LifeTrack could not finish ${expectedProvider} sign-in.`, error);
-                callbackError.textContent = `${expectedProvider === "apple" ? "Apple" : "Google"} connected, but LifeTrack could not restore the session. Please try again.`;
+                localStorage.setItem("lifetrack-theme", isDark ? "dark" : "light");
+            }
+            themeBtn.addEventListener("click", () => setTheme(!document.body.classList.contains("dark")));
+            const savedAuthTheme = localStorage.getItem("lifetrack-theme");
+            const prefersDarkAuth = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+            const isDarkAuth = savedAuthTheme ? (savedAuthTheme === "dark" || (savedAuthTheme === "system" && prefersDarkAuth)) : true;
+            setTheme(isDarkAuth);
+
+            const callbackError = document.getElementById("authError");
+            const authQuery = new URLSearchParams(window.location.search);
+            const googleErrors = {
+                state: "Google sign-in could not be verified. Please try again.",
+                expired_state: "Google sign-in timed out. Please try again.",
+                refresh_token: "Google did not provide ongoing access. Please sign in again and approve the requested access.",
+                drive_scope: "Allow Google Drive app-data access to enable secure syncing.",
+                authorization: "Google sign-in could not be completed. Check Worker and OAuth configuration, then try again."
+            };
+            const appleErrors = {
+                not_configured: "Apple sign-in is not ready yet. The site owner must finish Apple Developer setup.",
+                state: "Apple sign-in could not be verified. Please try again.",
+                expired_state: "Apple sign-in timed out. Please try again.",
+                cancelled: "Apple sign-in was cancelled.",
+                authorization: "Apple sign-in could not be completed. Please try again."
+            };
+            if (authQuery.has("googleError")) {
+                callbackError.textContent = googleErrors[authQuery.get("googleError")] || "Google sign-in could not be completed. Please try again.";
                 callbackError.classList.add("show");
-            });
-        return;
-    }
-
-    // ---- if a Google/local account is already remembered, skip the login page on open ----
-    const existingUser = JSON.parse(localStorage.getItem("lifetrack-user") || "null");
-    const forceLogin = new URLSearchParams(window.location.search).has("forceLogin");
-    if (existingUser && existingUser.name && !forceLogin && !authQuery.has("googleError") && !authQuery.has("appleError")) {
-        window.location.replace("dashboard.html");
-        return;
-    }
-    if (existingUser && existingUser.name) {
-        const banner = document.getElementById("authBanner");
-        banner.textContent = "";
-        const strong = document.createElement("strong");
-        strong.textContent = existingUser.name;
-        const link = document.createElement("a");
-        link.href = "dashboard.html";
-        link.textContent = "go to Dashboard";
-        link.style.cssText = "color:var(--primary-strong); font-weight:700;";
-        const other = document.createElement("a");
-        other.href = "index.html?forceLogin=1";
-        other.textContent = "log in as someone else";
-        other.style.cssText = "color:var(--primary-strong); font-weight:700;";
-        banner.append("Logged in as ", strong, " — ", link, ", or ", other, ".");
-        banner.style.display = "block";
-    }
-
-    // ---- email/password account mode ----
-    const title = document.getElementById("authTitle");
-    const sub = document.getElementById("authSub");
-    const submitBtn = document.getElementById("authSubmitBtn");
-    const modeSwitch = document.getElementById("authModeSwitch");
-    const nameField = document.getElementById("authNameField");
-    const nameInput = document.getElementById("authName");
-    const emailInput = document.getElementById("authEmail");
-    const passwordInput = document.getElementById("authPassword");
-    const rememberedName = localStorage.getItem("lifetrack-remember-name");
-    let isSignup = false;
-    let signupNeedsName = false;
-
-    modeSwitch.addEventListener("click", () => {
-        isSignup = !isSignup;
-        signupNeedsName = false;
-        nameField.hidden = true;
-        nameInput.required = false;
-        if (isSignup) {
-            title.textContent = "Create your account";
-            sub.textContent = "Enter your email and password to get started.";
-            submitBtn.textContent = "Continue";
-            modeSwitch.textContent = "Already have an account? Log in";
-            passwordInput.autocomplete = "new-password";
-        } else {
-            title.textContent = "Welcome back";
-            sub.textContent = "Log in to keep your habit streaks going.";
-            submitBtn.textContent = "Log In";
-            modeSwitch.textContent = "New here? Create account";
-            passwordInput.autocomplete = "current-password";
-        }
-        errorBox.classList.remove("show");
-    });
-
-    const form = document.getElementById("authForm");
-    const errorBox = document.getElementById("authError");
-
-    // uid decides which private data slot this person gets in this browser
-    function login(name, email, extra) {
-        const cleanName = name.trim();
-        const user = Object.assign({ name: cleanName, email: email.trim(), provider: "local" }, extra || {});
-        if (user.provider !== "google") {
-            sessionStorage.removeItem("lifetrack-drive-token");
-            sessionStorage.removeItem("lifetrack-gtoken");
-        }
-        if (!user.uid) user.uid = "n_" + cleanName.toLowerCase().replace(/\s+/g, " ");
-        localStorage.setItem("lifetrack-user", JSON.stringify(user));
-        if (document.getElementById("authRemember").checked) {
-            localStorage.setItem("lifetrack-remember-name", cleanName);
-        } else {
-            localStorage.removeItem("lifetrack-remember-name");
-        }
-        window.location.href = "dashboard.html";
-    }
-
-    function completePasswordLogin(user) {
-        if (!user || user.provider !== "password" || !user.uid || !user.name || !user.email) {
-            throw new Error("LifeTrack could not verify the email/password account response.");
-        }
-        sessionStorage.removeItem("lifetrack-drive-token");
-        sessionStorage.removeItem("lifetrack-gtoken");
-        localStorage.setItem("lifetrack-user", JSON.stringify(user));
-        if (document.getElementById("authRemember").checked) {
-            localStorage.setItem("lifetrack-remember-name", user.name);
-        } else {
-            localStorage.removeItem("lifetrack-remember-name");
-        }
-        window.location.replace("dashboard.html");
-    }
-
-    async function requestPasswordAuth(mode, credentials) {
-        const endpoint = mode === "register"
-            ? "/api/auth/password/register"
-            : "/api/auth/password/login";
-        const bridge = window.LifeTrackNativeReminders;
-        if (bridge && typeof bridge.isNativeApp === "function" && bridge.isNativeApp()) {
-            if (typeof bridge.authenticateWithPassword !== "function") {
-                throw new Error("Update the LifeTrack Android app to use email/password sign-in.");
             }
-            return await new Promise((resolve, reject) => {
-                const timeout = window.setTimeout(() => {
-                    delete window.__lifeTrackPasswordAuthResult;
-                    reject(new Error("Email/password sign-in timed out. Check your connection and try again."));
-                }, 20_000);
-                window.__lifeTrackPasswordAuthResult = (rawResponse) => {
-                    window.clearTimeout(timeout);
-                    delete window.__lifeTrackPasswordAuthResult;
-                    try {
-                        const result = JSON.parse(rawResponse);
-                        if (!result || !result.user) throw new Error(result && result.error || "Email/password sign-in failed.");
-                        resolve(result);
-                    } catch (error) {
-                        reject(error);
+            if (authQuery.has("appleError")) {
+                callbackError.textContent = appleErrors[authQuery.get("appleError")] || "Apple sign-in could not be completed. Please try again.";
+                callbackError.classList.add("show");
+            }
+            if (authQuery.get("google") === "connected" || authQuery.get("apple") === "connected") {
+                const expectedProvider = authQuery.get("apple") === "connected" ? "apple" : "google";
+                fetch("/api/auth/session", { credentials: "same-origin", cache: "no-store" })
+                    .then(async (response) => {
+                        if (!response.ok) throw new Error(`Session setup failed (HTTP ${response.status}).`);
+                        const session = await response.json();
+                        if (!session.user || session.user.provider !== expectedProvider || !session.user.uid) {
+                            throw new Error(`${expectedProvider} did not return a valid LifeTrack account.`);
+                        }
+                        const rememberedUser = JSON.parse(localStorage.getItem("lifetrack-user") || "null");
+                        if (expectedProvider === "apple" && rememberedUser && rememberedUser.uid === session.user.uid) {
+                            if (rememberedUser.name) session.user.name = rememberedUser.name;
+                            if (!session.user.email && rememberedUser.email) session.user.email = rememberedUser.email;
+                        }
+                        localStorage.setItem("lifetrack-user", JSON.stringify(session.user));
+                        localStorage.setItem("lifetrack-remember-name", session.user.name);
+                        window.location.replace("dashboard.html");
+                    })
+                    .catch((error) => {
+                        console.error(`LifeTrack could not finish ${expectedProvider} sign-in.`, error);
+                        callbackError.textContent = `${expectedProvider === "apple" ? "Apple" : "Google"} connected, but LifeTrack could not restore the session. Please try again.`;
+                        callbackError.classList.add("show");
+                    });
+                return;
+            }
+
+            // ---- if a Google/local account is already remembered, skip the login page on open ----
+            const existingUser = JSON.parse(localStorage.getItem("lifetrack-user") || "null");
+            const forceLogin = new URLSearchParams(window.location.search).has("forceLogin");
+            if (existingUser && existingUser.name && !forceLogin && !authQuery.has("googleError") && !authQuery.has("appleError")) {
+                window.location.replace("dashboard.html");
+                return;
+            }
+            if (existingUser && existingUser.name) {
+                const banner = document.getElementById("authBanner");
+                banner.textContent = "";
+                const strong = document.createElement("strong");
+                strong.textContent = existingUser.name;
+                const link = document.createElement("a");
+                link.href = "dashboard.html";
+                link.textContent = "go to Dashboard";
+                link.style.cssText = "color:var(--primary-strong); font-weight:700;";
+                const other = document.createElement("a");
+                other.href = "index.html?forceLogin=1";
+                other.textContent = "log in as someone else";
+                other.style.cssText = "color:var(--primary-strong); font-weight:700;";
+                banner.append("Logged in as ", strong, " — ", link, ", or ", other, ".");
+                banner.style.display = "block";
+            }
+
+            // ---- email/password account mode ----
+            const title = document.getElementById("authTitle");
+            const sub = document.getElementById("authSub");
+            const submitBtn = document.getElementById("authSubmitBtn");
+            const modeSwitch = document.getElementById("authModeSwitch");
+            const nameField = document.getElementById("authNameField");
+            const nameInput = document.getElementById("authName");
+            const emailInput = document.getElementById("authEmail");
+            const passwordInput = document.getElementById("authPassword");
+            const rememberedName = localStorage.getItem("lifetrack-remember-name");
+            let isSignup = false;
+            let signupNeedsName = false;
+
+            modeSwitch.addEventListener("click", () => {
+                isSignup = !isSignup;
+                signupNeedsName = false;
+                nameField.hidden = true;
+                nameInput.required = false;
+                if (isSignup) {
+                    title.textContent = "Create your account";
+                    sub.textContent = "Enter your email and password to get started.";
+                    submitBtn.textContent = "Continue";
+                    modeSwitch.textContent = "Already have an account? Log in";
+                    passwordInput.autocomplete = "new-password";
+                } else {
+                    title.textContent = "Welcome back";
+                    sub.textContent = "Log in to keep your habit streaks going.";
+                    submitBtn.textContent = "Log In";
+                    modeSwitch.textContent = "New here? Create account";
+                    passwordInput.autocomplete = "current-password";
+                }
+                errorBox.classList.remove("show");
+            });
+
+            const form = document.getElementById("authForm");
+            const errorBox = document.getElementById("authError");
+
+            // uid decides which private data slot this person gets in this browser
+            function login(name, email, extra) {
+                const cleanName = name.trim();
+                const user = Object.assign({ name: cleanName, email: email.trim(), provider: "local" }, extra || {});
+                if (user.provider !== "google") {
+                    sessionStorage.removeItem("lifetrack-drive-token");
+                    sessionStorage.removeItem("lifetrack-gtoken");
+                }
+                if (!user.uid) user.uid = "n_" + cleanName.toLowerCase().replace(/\s+/g, " ");
+                localStorage.setItem("lifetrack-user", JSON.stringify(user));
+                if (document.getElementById("authRemember").checked) {
+                    localStorage.setItem("lifetrack-remember-name", cleanName);
+                } else {
+                    localStorage.removeItem("lifetrack-remember-name");
+                }
+                window.location.href = "dashboard.html";
+            }
+
+            function completePasswordLogin(user) {
+                if (!user || user.provider !== "password" || !user.uid || !user.name || !user.email) {
+                    throw new Error("LifeTrack could not verify the email/password account response.");
+                }
+                sessionStorage.removeItem("lifetrack-drive-token");
+                sessionStorage.removeItem("lifetrack-gtoken");
+                localStorage.setItem("lifetrack-user", JSON.stringify(user));
+                if (document.getElementById("authRemember").checked) {
+                    localStorage.setItem("lifetrack-remember-name", user.name);
+                } else {
+                    localStorage.removeItem("lifetrack-remember-name");
+                }
+                window.location.replace("dashboard.html");
+            }
+
+            async function requestPasswordAuth(mode, credentials) {
+                const endpoint = mode === "register"
+                    ? "/api/auth/password/register"
+                    : "/api/auth/password/login";
+                const bridge = window.LifeTrackNativeReminders;
+                if (bridge && typeof bridge.isNativeApp === "function" && bridge.isNativeApp()) {
+                    if (typeof bridge.authenticateWithPassword !== "function") {
+                        throw new Error("Update the LifeTrack Android app to use email/password sign-in.");
                     }
-                };
-                bridge.authenticateWithPassword(JSON.stringify({ mode, ...credentials }));
+                    return await new Promise((resolve, reject) => {
+                        const timeout = window.setTimeout(() => {
+                            delete window.__lifeTrackPasswordAuthResult;
+                            reject(new Error("Email/password sign-in timed out. Check your connection and try again."));
+                        }, 20_000);
+                        window.__lifeTrackPasswordAuthResult = (rawResponse) => {
+                            window.clearTimeout(timeout);
+                            delete window.__lifeTrackPasswordAuthResult;
+                            try {
+                                const result = JSON.parse(rawResponse);
+                                if (!result || !result.user) throw new Error(result && result.error || "Email/password sign-in failed.");
+                                resolve(result);
+                            } catch (error) {
+                                reject(error);
+                            }
+                        };
+                        bridge.authenticateWithPassword(JSON.stringify({ mode, ...credentials }));
+                    });
+                }
+                if (location.protocol === "file:") {
+                    throw new Error("Email/password accounts need an internet connection. Open LifeTrack online or use the installed app.");
+                }
+                const response = await fetch(endpoint, {
+                    method: "POST",
+                    credentials: "same-origin",
+                    cache: "no-store",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(credentials)
+                });
+                let result;
+                try {
+                    result = await response.json();
+                } catch {
+                    throw new Error("LifeTrack returned an invalid sign-in response. Please try again.");
+                }
+                if (!response.ok) throw new Error(result.error || "Email/password sign-in failed.");
+                return result;
+            }
+
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                errorBox.classList.remove("show");
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                if (!emailInput.checkValidity()) {
+                    showError("Enter a valid email address.");
+                    emailInput.focus();
+                    return;
+                }
+                if (!password || password.length > 128) {
+                    showError("Enter your password (up to 128 characters).");
+                    passwordInput.focus();
+                    return;
+                }
+                if (isSignup && !signupNeedsName) {
+                    if (password.length < 10) {
+                        showError("Use a password with at least 10 characters.");
+                        passwordInput.focus();
+                        return;
+                    }
+                    nameInput.value = rememberedName || "";
+                    nameField.hidden = false;
+                    nameInput.required = true;
+                    signupNeedsName = true;
+                    sub.textContent = "Now enter your name to finish creating your account.";
+                    submitBtn.textContent = "Create Account";
+                    nameInput.focus();
+                    return;
+                }
+                if (isSignup && !nameInput.value.trim()) {
+                    showError("Please enter your name to continue.");
+                    nameInput.focus();
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = isSignup ? "Creating account..." : "Signing in...";
+                try {
+                    const result = await requestPasswordAuth(isSignup ? "register" : "login", {
+                        email,
+                        password,
+                        ...(isSignup ? { name: nameInput.value.trim() } : {})
+                    });
+                    completePasswordLogin(result.user);
+                } catch (error) {
+                    showError(error.message || "Email/password sign-in failed. Please try again.");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = isSignup ? (signupNeedsName ? "Create Account" : "Continue") : "Log In";
+                }
+            });
+
+            document.getElementById("guestBtn").addEventListener("click", () => {
+                login("Guest", "", { uid: "guest" });
+            });
+
+            // ---- Google sign-in starts the same-origin Worker OAuth flow ----
+            const CFG = window.LT_CONFIG || {};
+            const GID = CFG.GOOGLE_CLIENT_ID || "";
+            const gReady = /^[0-9]+-.+\.apps\.googleusercontent\.com$/.test(GID);
+
+            function showError(text) {
+                errorBox.textContent = text;
+                errorBox.classList.add("show");
+            }
+
+            document.getElementById("googleBtn").addEventListener("click", (event) => {
+                event.preventDefault();
+                if (window.LifeTrackNativeReminders && window.LifeTrackNativeReminders.isNativeApp()) {
+                    if (!gReady) {
+                        showError("Google login is not set up yet. (Site owner: add the Client ID in config.js.)");
+                        return;
+                    }
+                    window.LifeTrackNativeReminders.startGoogleSignIn();
+                    return;
+                }
+                if (location.protocol === "file:") {
+                    showError("Google login works on the online website, not from a file on your computer.");
+                    return;
+                }
+                if (!gReady) {
+                    showError("Google login is not set up yet. (Site owner: add the Client ID in config.js.)");
+                    return;
+                }
+                window.location.assign("/api/auth/google/start?returnTo=index.html");
+            });
+
+            document.getElementById("appleBtn").addEventListener("click", (event) => {
+                event.preventDefault();
+                if (window.LifeTrackNativeReminders && window.LifeTrackNativeReminders.isNativeApp()) {
+                    showError("Apple sign-in is available on the desktop website, not in the mobile app.");
+                    return;
+                }
+                if (location.protocol === "file:") {
+                    showError("Apple sign-in works on the online website, not from a file on your computer.");
+                    return;
+                }
+                window.location.assign("/api/auth/apple/start");
+            });
+
+        })();
+    </script>
+    <script>
+        if ("serviceWorker" in navigator && !window.LT_REDIRECTING && location.protocol !== "file:") {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("./sw.js", { scope: "./" })
+                    .catch((error) => console.error("LifeTrack offline support could not start.", error));
             });
         }
-        if (location.protocol === "file:") {
-            throw new Error("Email/password accounts need an internet connection. Open LifeTrack online or use the installed app.");
-        }
-        const response = await fetch(endpoint, {
-            method: "POST",
-            credentials: "same-origin",
-            cache: "no-store",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(credentials)
-        });
-        let result;
-        try {
-            result = await response.json();
-        } catch {
-            throw new Error("LifeTrack returned an invalid sign-in response. Please try again.");
-        }
-        if (!response.ok) throw new Error(result.error || "Email/password sign-in failed.");
-        return result;
-    }
-
-    form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        errorBox.classList.remove("show");
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-        if (!emailInput.checkValidity()) {
-            showError("Enter a valid email address.");
-            emailInput.focus();
-            return;
-        }
-        if (!password || password.length > 128) {
-            showError("Enter your password (up to 128 characters).");
-            passwordInput.focus();
-            return;
-        }
-        if (isSignup && !signupNeedsName) {
-            if (password.length < 10) {
-                showError("Use a password with at least 10 characters.");
-                passwordInput.focus();
-                return;
-            }
-            nameInput.value = rememberedName || "";
-            nameField.hidden = false;
-            nameInput.required = true;
-            signupNeedsName = true;
-            sub.textContent = "Now enter your name to finish creating your account.";
-            submitBtn.textContent = "Create Account";
-            nameInput.focus();
-            return;
-        }
-        if (isSignup && !nameInput.value.trim()) {
-            showError("Please enter your name to continue.");
-            nameInput.focus();
-            return;
-        }
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = isSignup ? "Creating account..." : "Signing in...";
-        try {
-            const result = await requestPasswordAuth(isSignup ? "register" : "login", {
-                email,
-                password,
-                ...(isSignup ? { name: nameInput.value.trim() } : {})
-            });
-            completePasswordLogin(result.user);
-        } catch (error) {
-            showError(error.message || "Email/password sign-in failed. Please try again.");
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = isSignup ? (signupNeedsName ? "Create Account" : "Continue") : "Log In";
-        }
-    });
-
-    document.getElementById("guestBtn").addEventListener("click", () => {
-        login("Guest", "", { uid: "guest" });
-    });
-
-    // ---- Google sign-in starts the same-origin Worker OAuth flow ----
-    const CFG = window.LT_CONFIG || {};
-    const GID = CFG.GOOGLE_CLIENT_ID || "";
-    const gReady = /^[0-9]+-.+\.apps\.googleusercontent\.com$/.test(GID);
-
-    function showError(text) {
-        errorBox.textContent = text;
-        errorBox.classList.add("show");
-    }
-
-    document.getElementById("googleBtn").addEventListener("click", (event) => {
-        event.preventDefault();
-        if (window.LifeTrackNativeReminders && window.LifeTrackNativeReminders.isNativeApp()) {
-            if (!gReady) {
-                showError("Google login is not set up yet. (Site owner: add the Client ID in config.js.)");
-                return;
-            }
-            window.LifeTrackNativeReminders.startGoogleSignIn();
-            return;
-        }
-        if (location.protocol === "file:") {
-            showError("Google login works on the online website, not from a file on your computer.");
-            return;
-        }
-        if (!gReady) {
-            showError("Google login is not set up yet. (Site owner: add the Client ID in config.js.)");
-            return;
-        }
-        window.location.assign("/api/auth/google/start?returnTo=index.html");
-    });
-
-    document.getElementById("appleBtn").addEventListener("click", (event) => {
-        event.preventDefault();
-        if (window.LifeTrackNativeReminders && window.LifeTrackNativeReminders.isNativeApp()) {
-            showError("Apple sign-in is available on the desktop website, not in the mobile app.");
-            return;
-        }
-        if (location.protocol === "file:") {
-            showError("Apple sign-in works on the online website, not from a file on your computer.");
-            return;
-        }
-        window.location.assign("/api/auth/apple/start");
-    });
-
-})();
-</script>
-<script>
-    if ("serviceWorker" in navigator && !window.LT_REDIRECTING && location.protocol !== "file:") {
-        window.addEventListener("load", () => {
-            navigator.serviceWorker.register("./sw.js", { scope: "./" })
-                .catch((error) => console.error("LifeTrack offline support could not start.", error));
-        });
-    }
-</script>
+    </script>
 </body>
+
 </html>

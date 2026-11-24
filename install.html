@@ -1,55 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#e9edf4">
-    <meta name="description" content="Download LifeTrack for Android, iPhone, Windows, and Mac. Get the official Android APK or follow simple iPhone, Safari, Chrome, and desktop install steps.">
+    <meta name="theme-color" content="#09090b">
+    <meta name="color-scheme" content="dark light">
+    <meta name="description"
+        content="Download LifeTrack for Android, iPhone, Windows, and Mac. Get the official Android APK or follow simple iPhone, Safari, Chrome, and desktop install steps.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://lifetrack.surajshukla22051.workers.dev/install.html">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="LifeTrack">
     <meta property="og:title" content="Download LifeTrack | Android, iPhone, Windows &amp; Mac">
-    <meta property="og:description" content="Get the official LifeTrack Android APK or install LifeTrack on iPhone, Windows, and Mac.">
+    <meta property="og:description"
+        content="Get the official LifeTrack Android APK or install LifeTrack on iPhone, Windows, and Mac.">
     <meta property="og:url" content="https://lifetrack.surajshukla22051.workers.dev/install.html">
     <meta name="twitter:card" content="summary">
     <title>Download LifeTrack | Android, iPhone, Windows &amp; Mac</title>
     <link rel="icon" type="image/png" href="lifetrack-logo.png?v=2" media="(prefers-color-scheme: light)">
     <link rel="icon" type="image/png" href="lifetrack-logo-dark.png?v=2" media="(prefers-color-scheme: dark)">
     <link rel="apple-touch-icon" href="lifetrack-logo-192.png?v=2">
-    <link rel="stylesheet" href="dashboard.css?v=66">
+    <link rel="stylesheet" href="dashboard.css?v=91">
     <script src="config.js"></script>
     <script src="adsense.js" defer></script>
     <style>
-        .install-body { min-height: 100vh; padding: 24px; }
-        .install-wrap { width: min(100%, 820px); margin: 0 auto; }
-        .install-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 0 24px; border-bottom: 1px solid var(--line); }
-        .install-brand, .install-header a:last-child { color: var(--primary-strong); font-weight: 700; text-decoration: none; }
-        .install-brand { color: var(--text); font-size: 16px; font-weight: 800; }
-        .install-main { padding: 36px 0 56px; }
-        .install-main .eyebrow { color: var(--primary-strong); font-size: 11px; font-weight: 800; }
-        .install-main h1 { margin: 8px 0; font-size: 32px; line-height: 1.2; }
-        .install-main > p, .install-card p, .install-card li { color: var(--muted); font-size: 14px; line-height: 1.7; }
-        .install-grid { display: grid; gap: 14px; margin-top: 24px; }
-        .install-card { padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); scroll-margin-top: 20px; }
-        .install-card h2 { margin: 0 0 8px; font-size: 19px; }
-        .install-card h3 { margin: 18px 0 6px; font-size: 15px; }
-        .install-card p { margin: 6px 0; }
-        .install-card ol { margin: 10px 0; padding-left: 24px; }
-        .install-card li + li { margin-top: 6px; }
-        .install-card a { color: var(--primary-strong); font-weight: 700; overflow-wrap: anywhere; }
-        .install-note { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-soft); }
-        .install-download { display: inline-block; margin: 8px 8px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-soft); text-decoration: none; }
-        .install-ad { margin-top: 24px; padding: 12px 0; border-top: 1px solid var(--line); }
-        .install-ad p { margin: 0 0 8px; color: var(--muted); font-size: 11px; }
+        .install-body {
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .install-wrap {
+            width: min(100%, 820px);
+            margin: 0 auto;
+        }
+
+        .install-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 8px 0 24px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .install-brand,
+        .install-header a:last-child {
+            color: var(--primary-strong);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .install-brand {
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .install-main {
+            padding: 36px 0 56px;
+        }
+
+        .install-main .eyebrow {
+            color: var(--primary-strong);
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .install-main h1 {
+            margin: 8px 0;
+            font-size: 32px;
+            line-height: 1.2;
+        }
+
+        .install-main>p,
+        .install-card p,
+        .install-card li {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .install-grid {
+            display: grid;
+            gap: 14px;
+            margin-top: 24px;
+        }
+
+        .install-card {
+            padding: 20px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--panel);
+            scroll-margin-top: 20px;
+        }
+
+        .install-card h2 {
+            margin: 0 0 8px;
+            font-size: 19px;
+        }
+
+        .install-card h3 {
+            margin: 18px 0 6px;
+            font-size: 15px;
+        }
+
+        .install-card p {
+            margin: 6px 0;
+        }
+
+        .install-card ol {
+            margin: 10px 0;
+            padding-left: 24px;
+        }
+
+        .install-card li+li {
+            margin-top: 6px;
+        }
+
+        .install-card a {
+            color: var(--primary-strong);
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .install-note {
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: var(--panel-soft);
+        }
+
+        .install-download {
+            display: inline-block;
+            margin: 8px 8px 0 0;
+            padding: 10px 14px;
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            background: var(--panel-soft);
+            text-decoration: none;
+        }
+
+        .install-ad {
+            margin-top: 24px;
+            padding: 12px 0;
+            border-top: 1px solid var(--line);
+        }
+
+        .install-ad p {
+            margin: 0 0 8px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
         @media (max-width: 520px) {
-            .install-body { padding: 16px; }
-            .install-main { padding-top: 28px; }
-            .install-main h1 { font-size: 27px; }
+            .install-body {
+                padding: 16px;
+            }
+
+            .install-main {
+                padding-top: 28px;
+            }
+
+            .install-main h1 {
+                font-size: 27px;
+            }
         }
     </style>
 </head>
-<body class="privacy-body install-body">
+
+<body class="privacy-body install-body dark">
+    <script>
+        (function () {
+            const saved = localStorage.getItem("lifetrack-theme");
+            if (saved === "light" || (saved === "system" && !window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+                document.body.classList.remove("dark");
+                document.documentElement.style.colorScheme = "light";
+                const m = document.querySelector('meta[name="theme-color"]');
+                if (m) m.content = "#f8f9fa";
+            } else {
+                document.documentElement.style.colorScheme = "dark";
+            }
+        })();
+    </script>
     <div class="install-wrap">
         <header class="install-header">
             <a class="install-brand" href="./index.html">LifeTrack</a>
@@ -58,56 +191,80 @@
         <main class="install-main">
             <p class="eyebrow">OFFICIAL LIFETRACK DOWNLOAD</p>
             <h1>Download LifeTrack for Android, iPhone, Windows &amp; Mac</h1>
-            <p>Get LifeTrack from its official download page. Download the Android APK or follow the steps to add LifeTrack to iPhone, Windows, or Mac. Sign in with the same Google account to sync supported tracker data between devices.</p>
+            <p>Get LifeTrack from its official download page. Download the Android APK or follow the steps to add
+                LifeTrack to iPhone, Windows, or Mac. Sign in with the same Google account to sync supported tracker
+                data between devices.</p>
             <div class="install-grid">
                 <section class="install-card" id="mac">
                     <h2>Mac</h2>
-                    <p><strong>Chrome or Edge:</strong> open LifeTrack in your browser and choose <strong>Install LifeTrack</strong> from the address bar or browser menu.</p>
-                    <p><strong>Safari on macOS Sonoma 14 or newer:</strong> open LifeTrack and choose <strong>File → Add to Dock</strong>. On older macOS, use Chrome or Edge to install the web app.</p>
+                    <p><strong>Chrome or Edge:</strong> open LifeTrack in your browser and choose <strong>Install
+                            LifeTrack</strong> from the address bar or browser menu.</p>
+                    <p><strong>Safari on macOS Sonoma 14 or newer:</strong> open LifeTrack and choose <strong>File → Add
+                            to Dock</strong>. On older macOS, use Chrome or Edge to install the web app.</p>
                     <a class="install-download" href="./dashboard.html">Open LifeTrack</a>
                 </section>
                 <section class="install-card" id="iphone">
                     <h2>iPhone</h2>
-                    <p><strong>Install now:</strong> open <a href="./dashboard.html">LifeTrack</a> in Safari, tap <strong>Share → Add to Home Screen → Add</strong>, then launch the new LifeTrack icon from your Home Screen. Sign in with the same Google account to sync supported tracker data.</p>
-                    <p class="install-note">The native iPhone app is not yet available on TestFlight or the App Store. The Safari Home Screen app is the way to install LifeTrack on iPhone now.</p>
+                    <p><strong>Install now:</strong> open <a href="./dashboard.html">LifeTrack</a> in Safari, tap
+                        <strong>Share → Add to Home Screen → Add</strong>, then launch the new LifeTrack icon from your
+                        Home Screen. Sign in with the same Google account to sync supported tracker data.
+                    </p>
+                    <p class="install-note">The native iPhone app is not yet available on TestFlight or the App Store.
+                        The Safari Home Screen app is the way to install LifeTrack on iPhone now.</p>
                 </section>
                 <section class="install-card" id="android">
                     <h2>Android</h2>
-                    <p>Open LifeTrack in Chrome and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>, or download the Android APK below.</p>
-                    <p class="install-note">This APK uses the Sonic release key. It can update earlier Sonic-key installs; older LifeTrack installs signed with a different key require a backup and uninstall first.</p>
-                    <a class="install-download" href="./lifetrack-android-sonic.apk" download="LifeTrack-Sonic-Android.apk">Download Android APK</a>
+                    <p>Open LifeTrack in Chrome and choose <strong>Install app</strong> or <strong>Add to Home
+                            screen</strong>, or download the Android APK below.</p>
+                    <p class="install-note">This APK uses the Sonic release key. It can update earlier Sonic-key
+                        installs; older LifeTrack installs signed with a different key require a backup and uninstall
+                        first.</p>
+                    <a class="install-download" href="./lifetrack-android-sonic.apk"
+                        download="LifeTrack-Sonic-Android.apk">Download Android APK</a>
                 </section>
                 <section class="install-card" id="ios-source">
                     <h2>iPhone native app source</h2>
-                    <p>Download the iOS source project to build a signed app with Xcode on a Mac. An Apple Developer account is needed to upload it to TestFlight; Apple must process the first build before testers can install it.</p>
-                    <a class="install-download" href="./lifetrack-ios-source.zip" download="LifeTrack-iOS-source.zip">Download iOS source project</a>
+                    <p>Download the iOS source project to build a signed app with Xcode on a Mac. An Apple Developer
+                        account is needed to upload it to TestFlight; Apple must process the first build before testers
+                        can install it.</p>
+                    <a class="install-download" href="./lifetrack-ios-source.zip"
+                        download="LifeTrack-iOS-source.zip">Download iOS source project</a>
                     <a class="install-download" href="#ios-xcode">Mac/Xcode setup instructions</a>
                 </section>
                 <section class="install-card" id="ios-xcode">
                     <h2>Mac/Xcode setup for TestFlight</h2>
                     <ol>
-                        <li>On a Mac, install Xcode 15 or newer from the Mac App Store, then open it once and complete its setup.</li>
+                        <li>On a Mac, install Xcode 15 or newer from the Mac App Store, then open it once and complete
+                            its setup.</li>
                         <li>Install XcodeGen using Terminal: <code>brew install xcodegen</code>.</li>
-                        <li>Download and extract the <a href="./lifetrack-ios-source.zip" download="LifeTrack-iOS-source.zip">iOS source project</a>. In Terminal, go into the extracted folder containing <code>project.yml</code> and run <code>xcodegen generate</code>.</li>
-                        <li>Open the generated <code>LifeTrack.xcodeproj</code> in Xcode. Select your Apple Developer team under <strong>Signing &amp; Capabilities</strong> and register a bundle identifier for that team.</li>
-                        <li>Choose <strong>Product → Archive</strong>, then upload the archive to App Store Connect using Organizer. Add the processed build to a TestFlight group.</li>
+                        <li>Download and extract the <a href="./lifetrack-ios-source.zip"
+                                download="LifeTrack-iOS-source.zip">iOS source project</a>. In Terminal, go into the
+                            extracted folder containing <code>project.yml</code> and run <code>xcodegen generate</code>.
+                        </li>
+                        <li>Open the generated <code>LifeTrack.xcodeproj</code> in Xcode. Select your Apple Developer
+                            team under <strong>Signing &amp; Capabilities</strong> and register a bundle identifier for
+                            that team.</li>
+                        <li>Choose <strong>Product → Archive</strong>, then upload the archive to App Store Connect
+                            using Organizer. Add the processed build to a TestFlight group.</li>
                     </ol>
-                    <p class="install-note">The Google sign-in handoff for iPhone also needs the updated LifeTrack Worker deployed. The signed iPhone app cannot be built or installed from this Windows computer. Public App Store release needs Apple's review.</p>
+                    <p class="install-note">The Google sign-in handoff for iPhone also needs the updated LifeTrack
+                        Worker deployed. The signed iPhone app cannot be built or installed from this Windows computer.
+                        Public App Store release needs Apple's review.</p>
                 </section>
                 <section class="install-card" id="windows">
                     <h2>Windows</h2>
-                    <p>Open LifeTrack in Chrome or Edge and choose <strong>Install LifeTrack</strong> from the address bar or browser menu.</p>
+                    <p>Open LifeTrack in Chrome or Edge and choose <strong>Install LifeTrack</strong> from the address
+                        bar or browser menu.</p>
                     <a class="install-download" href="./dashboard.html">Open LifeTrack</a>
                 </section>
             </div>
             <section id="installAdContainer" class="install-ad" aria-label="Advertisement" hidden>
                 <p>Advertisement</p>
-                <ins id="installAdSlot" class="adsbygoogle"
-                    style="display:block"
-                    data-ad-format="auto"
+                <ins id="installAdSlot" class="adsbygoogle" style="display:block" data-ad-format="auto"
                     data-full-width-responsive="true"></ins>
             </section>
         </main>
     </div>
 </body>
+
 </html>
