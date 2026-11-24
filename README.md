@@ -6,7 +6,7 @@ LifeTrack is a habit and wellness tracking application designed to help people b
 
 ## 🔗 Project Links
 
-- **GitHub Repository:** https://lovishsingla00001-hub.github.io/LifeTracker/
+- **Project Live Link:** https://lovishsingla00001-hub.github.io/LifeTracker/
 - **Microsoft Store:** Search for **LifeTrack: Habit & Wellness** in Microsoft Store.
 
 ## ✨ Key Features
