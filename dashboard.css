@@ -20,6 +20,21 @@
     --emerald-subtle: rgba(53, 139, 100, 0.07);
     --rose: #BA4E5E;
     --rose-subtle: rgba(186, 78, 94, 0.07);
+    /* Subtle Shuttle Aerospace Color Suite (Light) */
+    --shuttle-blue: #2563EB;
+    --shuttle-blue-subtle: rgba(37, 99, 235, 0.08);
+    --shuttle-blue-glow: rgba(37, 99, 235, 0.16);
+    --shuttle-orange: #EA580C;
+    --shuttle-orange-subtle: rgba(234, 88, 12, 0.08);
+    --shuttle-gold: #D97706;
+    --shuttle-gold-subtle: rgba(217, 119, 6, 0.09);
+    --shuttle-cyan: #0284C7;
+    --shuttle-cyan-subtle: rgba(2, 132, 199, 0.08);
+    --shuttle-sage: #059669;
+    --shuttle-sage-subtle: rgba(5, 150, 105, 0.08);
+    --shuttle-purple: #7C3AED;
+    --shuttle-purple-subtle: rgba(124, 58, 237, 0.08);
+    --shuttle-titanium: #64748B;
     --track: #E4E8ED;
     --rail: #FBFBFC;
     --rail-text: #1E293B;
@@ -60,37 +75,85 @@
 .support-qr-fullscreen img { width: min(88vw, 78vh, 640px); height: min(88vw, 78vh, 640px); padding: 10px; border-radius: 16px; background: #fff; object-fit: contain; }
 .support-qr-fullscreen button { position: absolute; top: max(18px, env(safe-area-inset-top)); right: max(18px, env(safe-area-inset-right)); width: 44px; height: 44px; color: #fff; border: 1px solid rgba(255,255,255,.6); border-radius: 50%; background: rgba(255,255,255,.12); cursor: pointer; font-size: 26px; }
 .friend-privacy-note { margin: 14px 0; padding: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 10px; background: var(--panel-soft); font-size: 12px; line-height: 1.55; }
-.friend-sharing-toggle { display: flex; align-items: flex-start; gap: 10px; margin: 14px 0; font-size: 14px; font-weight: 700; }
-.friend-sharing-toggle input, .friend-choice input { accent-color: var(--primary); }
+.friend-mode-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin: 14px 0 6px; }
+.friend-sharing-toggle { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.friend-sharing-toggle input, .friend-choice input { accent-color: var(--shuttle-blue); }
+.friend-mode-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: var(--shuttle-cyan-subtle); border: 1px solid color-mix(in srgb, var(--shuttle-cyan) 25%, transparent); color: var(--shuttle-cyan); font-size: 11px; font-weight: 700; }
 .friend-status { min-height: 20px; margin: 10px 0 0; color: var(--muted); font-size: 12px; }
-.friend-status[data-kind="error"] { color: #b42318; }
-.friend-status[data-kind="success"] { color: #16803c; }
+.friend-status[data-kind="error"] { color: #dc2626; font-weight: 600; }
+.friend-status[data-kind="success"] { color: #16a34a; font-weight: 600; }
+.friend-status[data-kind="info"] { color: var(--shuttle-cyan); font-weight: 600; }
+
+.challenge-presets { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
+.challenge-presets-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.challenge-preset-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-soft); color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 160ms ease; }
+.challenge-preset-chip:hover { border-color: var(--shuttle-blue); background: var(--shuttle-blue-subtle); color: var(--shuttle-blue); transform: translateY(-1px); }
+.challenge-preset-chip.active { border-color: var(--shuttle-blue); background: var(--shuttle-blue); color: #fff; }
+
+.challenge-builder-grid { display: grid; gap: 16px; margin-top: 14px; }
+.challenge-field { display: grid; gap: 6px; }
+.challenge-field label, .challenge-section-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.challenge-field input, .challenge-field select { min-height: 42px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit; font-size: 13px; transition: border-color 160ms ease; }
+.challenge-field input:focus, .challenge-field select:focus { outline: none; border-color: var(--shuttle-blue); box-shadow: 0 0 0 3px var(--shuttle-blue-subtle); }
+.challenge-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .challenge-field-row { grid-template-columns: 1fr; } }
+.challenge-competitors-section { display: grid; gap: 8px; }
+.challenge-builder-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.challenge-start-btn { min-height: 42px; padding: 10px 20px; font-weight: 700; background: linear-gradient(135deg, var(--shuttle-blue), #1D4ED8); color: #fff; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 2px 10px var(--shuttle-blue-subtle); transition: all 160ms ease; }
+.challenge-start-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px var(--shuttle-blue-glow); }
+
+.flex-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.action-btn-small { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-soft); color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 160ms ease; }
+.action-btn-small:hover { border-color: var(--shuttle-blue); color: var(--shuttle-blue); }
+.action-btn-text { background: none; border: none; color: var(--shuttle-blue); font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px 6px; }
+.action-btn-text:hover { text-decoration: underline; }
+
 .friend-search-form { display: flex; gap: 8px; margin: 14px 0; }
 .friend-search-form input { flex: 1; min-width: 0; min-height: 42px; padding: 8px 11px; color: var(--text); border: 1px solid var(--line); border-radius: 9px; background: var(--panel); font: inherit; }
-.friend-list, .friend-choice-list, .friend-challenges { display: grid; gap: 9px; margin-top: 12px; }
-.friend-row, .friend-choice, .friend-challenge-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel-soft); }
+.friend-list, .friend-choice-list, .friend-challenges { display: grid; gap: 10px; margin-top: 12px; }
+.friend-row, .friend-choice, .friend-challenge-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-soft); transition: border-color 160ms ease; }
+.friend-row:hover, .friend-choice:hover { border-color: color-mix(in srgb, var(--shuttle-blue) 35%, var(--line)); }
 .friend-row-copy { display: grid; gap: 3px; min-width: 0; }
-.friend-row-copy strong { overflow-wrap: anywhere; }
+.friend-row-copy strong { overflow-wrap: anywhere; font-size: 13px; }
 .friend-row-copy small, .friend-choice small { color: var(--muted); font-size: 11px; }
 .friend-presence { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
 .friend-presence::before { width: 7px; height: 7px; border-radius: 50%; background: #8990a8; content: ""; }
-.friend-presence.is-online { color: #16803c; }
-.friend-presence.is-online::before { background: #22a447; }
+.friend-presence.is-online { color: #16a34a; }
+.friend-presence.is-online::before { background: #22c55e; }
 .friend-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
-.friend-action { min-height: 34px; padding: 6px 10px; color: var(--text); border: 1px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; }
-.friend-action.is-primary { color: #fff; border-color: var(--primary); background: var(--primary); }
-.friend-action.is-danger { color: #b42318; }
+.friend-action { min-height: 32px; padding: 6px 12px; color: var(--text); border: 1px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; transition: all 160ms ease; }
+.friend-action:hover { border-color: var(--shuttle-blue); }
+.friend-action.is-primary { color: #fff; border-color: var(--shuttle-blue); background: var(--shuttle-blue); }
+.friend-action.is-danger { color: #dc2626; border-color: color-mix(in srgb, #dc2626 25%, var(--line)); }
+.friend-action.is-danger:hover { background: rgba(220, 38, 38, 0.08); }
 .friend-choice { justify-content: flex-start; }
 .friend-choice label { display: flex; align-items: center; gap: 9px; width: 100%; cursor: pointer; }
-.friend-challenge-card { display: block; }
-.friend-challenge-card > header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
-.friend-challenge-card h3 { margin: 0 0 4px; font-size: 16px; }
+
+.friend-challenge-card { display: block; position: relative; border-top: 3px solid var(--shuttle-blue); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04); }
+body.dark .friend-challenge-card { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); }
+.friend-challenge-card > header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; }
+.friend-challenge-card h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; color: var(--text); }
 .friend-challenge-card p { margin: 0; color: var(--muted); font-size: 12px; }
-.friend-leaderboard { display: grid; gap: 7px; }
-.friend-leaderboard-row { display: grid; grid-template-columns: minmax(100px, 1.2fr) repeat(5, minmax(70px, 1fr)); gap: 8px; align-items: center; padding: 9px; border-radius: 8px; background: var(--panel); font-size: 11px; }
-.friend-leaderboard-row.is-heading { color: var(--muted); font-weight: 700; }
+.friend-challenge-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.challenge-card-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line); font-size: 11px; font-weight: 700; color: var(--muted); }
+.challenge-card-badge.is-metric { background: var(--shuttle-blue-subtle); border-color: color-mix(in srgb, var(--shuttle-blue) 22%, transparent); color: var(--shuttle-blue); }
+.challenge-card-badge.is-days { background: var(--shuttle-orange-subtle); border-color: color-mix(in srgb, var(--shuttle-orange) 22%, transparent); color: var(--shuttle-orange); }
+
+.friend-leaderboard { display: grid; gap: 8px; }
+.friend-leaderboard-row { display: grid; grid-template-columns: minmax(110px, 1.4fr) repeat(5, minmax(70px, 1fr)); gap: 8px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--panel); font-size: 12px; border: 1px solid transparent; transition: border-color 160ms ease; }
+.friend-leaderboard-row:hover { border-color: var(--line); }
+.friend-leaderboard-row.is-user { border-color: color-mix(in srgb, var(--shuttle-blue) 30%, transparent); background: color-mix(in srgb, var(--shuttle-blue) 4%, var(--panel)); font-weight: 600; }
+.friend-leaderboard-row.is-heading { color: var(--muted); font-weight: 700; font-size: 11px; background: transparent; padding: 4px 12px; text-transform: uppercase; letter-spacing: 0.04em; }
 .friend-leaderboard-row span { min-width: 0; overflow-wrap: anywhere; }
-.friend-empty { margin: 0; color: var(--muted); font-size: 12px; }
+
+.shuttle-rank-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 800; border: 1px solid transparent; margin-right: 6px; }
+.shuttle-rank-badge.rank-1 { background: var(--shuttle-gold-subtle); border-color: color-mix(in srgb, var(--shuttle-gold) 35%, transparent); color: var(--shuttle-gold); }
+.shuttle-rank-badge.rank-2 { background: rgba(148, 163, 184, 0.14); border-color: rgba(148, 163, 184, 0.35); color: var(--shuttle-titanium); }
+.shuttle-rank-badge.rank-3 { background: var(--shuttle-orange-subtle); border-color: color-mix(in srgb, var(--shuttle-orange) 35%, transparent); color: var(--shuttle-orange); }
+.shuttle-rank-badge.rank-other { background: var(--panel-soft); color: var(--muted); border-color: var(--line); }
+
+.friend-challenge-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.friend-empty { margin: 0; color: var(--muted); font-size: 12px; padding: 8px 0; }
 @media (max-width: 520px) {
     .support-content { grid-template-columns: 1fr; gap: 12px; }
     .support-qr-expand { width: min(68vw, 220px); }
@@ -192,6 +255,21 @@ body.dark {
     --emerald-subtle: rgba(78, 173, 128, 0.10);
     --rose: #D96B7B;
     --rose-subtle: rgba(217, 107, 123, 0.10);
+    /* Subtle Shuttle Aerospace Color Suite (Dark) */
+    --shuttle-blue: #38BDF8;
+    --shuttle-blue-subtle: rgba(56, 189, 248, 0.12);
+    --shuttle-blue-glow: rgba(56, 189, 248, 0.20);
+    --shuttle-orange: #FB923C;
+    --shuttle-orange-subtle: rgba(251, 146, 60, 0.12);
+    --shuttle-gold: #FBBF24;
+    --shuttle-gold-subtle: rgba(251, 191, 36, 0.12);
+    --shuttle-cyan: #22D3EE;
+    --shuttle-cyan-subtle: rgba(34, 211, 238, 0.12);
+    --shuttle-sage: #34D399;
+    --shuttle-sage-subtle: rgba(52, 211, 153, 0.12);
+    --shuttle-purple: #A78BFA;
+    --shuttle-purple-subtle: rgba(167, 139, 250, 0.12);
+    --shuttle-titanium: #94A3B8;
     --track: rgba(255, 255, 255, 0.065);
     --rail: #101217;
     --rail-text: #E2E8F0;
@@ -484,7 +562,59 @@ body.dark .sidebar .nav-item.active {
     margin-top: 0;
 }
 
-.eyebrow,
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--shuttle-blue-subtle);
+    border: 1px solid color-mix(in srgb, var(--shuttle-blue) 20%, transparent);
+    color: var(--shuttle-blue);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    width: fit-content;
+    margin-bottom: 6px;
+}
+
+.eyebrow.eyebrow-blue {
+    background: var(--shuttle-blue-subtle);
+    border-color: color-mix(in srgb, var(--shuttle-blue) 24%, transparent);
+    color: var(--shuttle-blue);
+}
+
+.eyebrow.eyebrow-orange {
+    background: var(--shuttle-orange-subtle);
+    border-color: color-mix(in srgb, var(--shuttle-orange) 24%, transparent);
+    color: var(--shuttle-orange);
+}
+
+.eyebrow.eyebrow-gold {
+    background: var(--shuttle-gold-subtle);
+    border-color: color-mix(in srgb, var(--shuttle-gold) 24%, transparent);
+    color: var(--shuttle-gold);
+}
+
+.eyebrow.eyebrow-cyan {
+    background: var(--shuttle-cyan-subtle);
+    border-color: color-mix(in srgb, var(--shuttle-cyan) 24%, transparent);
+    color: var(--shuttle-cyan);
+}
+
+.eyebrow.eyebrow-sage {
+    background: var(--shuttle-sage-subtle);
+    border-color: color-mix(in srgb, var(--shuttle-sage) 24%, transparent);
+    color: var(--shuttle-sage);
+}
+
+.eyebrow.eyebrow-purple {
+    background: var(--shuttle-purple-subtle);
+    border-color: color-mix(in srgb, var(--shuttle-purple) 24%, transparent);
+    color: var(--shuttle-purple);
+}
+
 .stat-title {
     color: var(--muted);
     font-size: 11px;

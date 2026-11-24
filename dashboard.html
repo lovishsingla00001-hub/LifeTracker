@@ -39,7 +39,7 @@
     <script src="pwa.js" defer></script>
     <link rel="icon" type="image/png" href="lifetrack-logo.png?v=2" sizes="120x120" media="(prefers-color-scheme: light)" data-theme-icon="light">
     <link rel="icon" type="image/png" href="lifetrack-logo-dark.png?v=2" sizes="120x120" media="(prefers-color-scheme: dark)" data-theme-icon="dark">
-    <link rel="stylesheet" href="dashboard.css?v=93">
+    <link rel="stylesheet" href="dashboard.css?v=94">
 </head>
 <body class="dark">
 <script>
@@ -528,25 +528,97 @@
 
         <section id="friends" class="section">
             <div class="page-card">
-                <span class="eyebrow">FRIENDS · 90-DAY MATCH</span>
+                <span class="eyebrow eyebrow-orange">FRIENDS · MATCHES & CHALLENGES</span>
                 <h2>Build a friendly challenge</h2>
-                <p>Find friends who opted in, see online/offline status, and invite accepted friends into a 90-day group match. Both accounts need to be signed in on the same hosted Worker, and each person must enable sharing. Localhost databases are separate on each computer. The match starts when you create it; friends who accept later are scored from the day they join.</p>
+                <p>Create custom friendly challenges or 90-day matches with friends. Compete on daily Life Score, habit consistency, focus minutes, or steps. Safe, private, and works seamlessly whether syncing with Cloudflare D1 or tracking locally on your device.</p>
                 <div class="friend-privacy-note">
-                    Only your daily Life Score, habit completion %, focus minutes, streak days, and steps are shared with friends who accept the same match. Habit names, body details, and raw tracker history are not shared. Turning sharing off removes your saved match metrics.
+                    Only your daily Life Score, habit completion %, focus minutes, streak days, and steps are shared with friends who accept the same match. Habit names, body details, and raw tracker history remain 100% private.
                 </div>
-                <label class="friend-sharing-toggle">
-                    <input type="checkbox" id="friendSharingToggle">
-                    <span>Let friends find me and share these match metrics</span>
-                </label>
+                <div class="friend-mode-bar">
+                    <label class="friend-sharing-toggle">
+                        <input type="checkbox" id="friendSharingToggle" checked>
+                        <span>Enable challenge sharing and live leaderboards</span>
+                    </label>
+                    <span id="friendModeBadge" class="friend-mode-chip">✦ Local & Peer Mode</span>
+                </div>
                 <p id="friendsStatus" class="friend-status" role="status" aria-live="polite">Sign in to use friends and group matches.</p>
             </div>
 
-            <div id="friendsWorkspace" hidden>
+            <div id="friendsWorkspace">
+                <!-- BUILD A FRIENDLY CHALLENGE BUILDER -->
+                <div class="page-card page-gap">
+                    <span class="eyebrow eyebrow-blue">CHALLENGE BUILDER</span>
+                    <h2>Create a friendly challenge</h2>
+                    <p>Set up a sprint or group match, choose the winning metric, and invite friends or training rivals to compete.</p>
+
+                    <div class="challenge-presets">
+                        <span class="challenge-presets-label">Quick presets:</span>
+                        <button type="button" class="challenge-preset-chip active" data-preset="90d-life" data-name="90-Day Grand Match" data-duration="90" data-metric="lifeScore">⚡ 90-Day Match (Life Score)</button>
+                        <button type="button" class="challenge-preset-chip" data-preset="30d-habits" data-name="30-Day Habit Lock-in" data-duration="30" data-metric="habitRate">🎯 30-Day Habits (90%+ Target)</button>
+                        <button type="button" class="challenge-preset-chip" data-preset="14d-focus" data-name="14-Day Deep Work Duel" data-duration="14" data-metric="focusMinutes">⏳ 14-Day Deep Focus Sprint</button>
+                        <button type="button" class="challenge-preset-chip" data-preset="7d-steps" data-name="7-Day 10K Steps Clash" data-duration="7" data-metric="steps">👟 7-Day 10K Steps Clash</button>
+                    </div>
+
+                    <form id="challengeBuilderForm" class="challenge-builder-grid">
+                        <div class="challenge-field">
+                            <label for="challengeTitleInput">Challenge Name</label>
+                            <input id="challengeTitleInput" type="text" maxlength="80" placeholder="e.g. 90-Day Summer Grind" value="90-Day Grand Match" required>
+                        </div>
+                        <div class="challenge-field-row">
+                            <div class="challenge-field">
+                                <label for="challengeMetricSelect">Primary Focus Metric</label>
+                                <select id="challengeMetricSelect">
+                                    <option value="lifeScore" selected>🌟 Life Score (0–100 Overall Balance)</option>
+                                    <option value="habitRate">🎯 Habit Completion %</option>
+                                    <option value="focusMinutes">⏳ Daily Focus Minutes</option>
+                                    <option value="steps">👟 Daily Steps</option>
+                                    <option value="streakDays">🔥 Habit Streak Continuity</option>
+                                </select>
+                            </div>
+                            <div class="challenge-field">
+                                <label for="challengeDurationSelect">Challenge Duration</label>
+                                <select id="challengeDurationSelect">
+                                    <option value="7">7 Days · Quick Sprint</option>
+                                    <option value="14">14 Days · Habit Spark</option>
+                                    <option value="30">30 Days · Habit Builder</option>
+                                    <option value="90" selected>90 Days · Full Group Match</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="challenge-competitors-section">
+                            <div class="flex-between">
+                                <label class="challenge-section-title">Select Competitors to Invite</label>
+                                <button type="button" id="addFriendlyPeerBtn" class="action-btn-text">+ Add training peer</button>
+                            </div>
+                            <div id="friendChallengeChoices" class="friend-choice-list"></div>
+                        </div>
+
+                        <div class="challenge-builder-actions">
+                            <button type="submit" id="createFriendChallenge" class="primary-button challenge-start-btn">🚀 Start Friendly Challenge</button>
+                            <button type="button" id="copyChallengeInviteBtn" class="action-btn-small" title="Share challenge invite link">🔗 Share Invite Link</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ACTIVE CHALLENGES & LEADERBOARDS -->
+                <div class="page-card page-gap">
+                    <div class="flex-between">
+                        <div>
+                            <span class="eyebrow eyebrow-gold">MATCH STANDINGS</span>
+                            <h2>Active challenges & leaderboard</h2>
+                        </div>
+                        <button type="button" id="syncChallengeScoreBtn" class="action-btn-small" title="Recalculate and update today's scores">🔄 Update My Score</button>
+                    </div>
+                    <div id="friendChallenges" class="friend-challenges"></div>
+                </div>
+
+                <!-- FRIENDS DISCOVERY & REQUESTS -->
                 <div class="duo-grid page-gap">
                     <div class="page-card">
-                        <span class="eyebrow">FIND PEOPLE</span>
-                        <h2>Search friends</h2>
-                        <p>Search by name, or enter an exact email. Only opted-in accounts appear; email addresses are never shown.</p>
+                        <span class="eyebrow eyebrow-cyan">FIND PEOPLE</span>
+                        <h2>Search & add friends</h2>
+                        <p>Search by name, or enter an exact email. You can also add custom friends to compete directly.</p>
                         <form id="friendSearchForm" class="friend-search-form">
                             <input id="friendSearchInput" type="search" maxlength="100" placeholder="Name or exact email" autocomplete="off">
                             <button type="submit" class="primary-button">Search</button>
@@ -554,8 +626,12 @@
                         <div id="friendSearchResults" class="friend-list" aria-live="polite"></div>
                     </div>
                     <div class="page-card">
-                        <span class="eyebrow">CONNECTIONS</span>
-                        <h2>Your friends</h2>
+                        <div class="flex-between">
+                            <div>
+                                <span class="eyebrow eyebrow-sage">CONNECTIONS</span>
+                                <h2>Your friends</h2>
+                            </div>
+                        </div>
                         <div id="friendList" class="friend-list"></div>
                     </div>
                 </div>
@@ -571,20 +647,6 @@
                         <h2>90-day match invites</h2>
                         <div id="friendChallengeInvites" class="friend-list"></div>
                     </div>
-                </div>
-
-                <div class="page-card page-gap">
-                    <span class="eyebrow">START A MATCH</span>
-                    <h2>Invite friends to compete</h2>
-                    <p>Choose 1–20 friends with sharing enabled. Their metrics stay private until they accept the match invite.</p>
-                    <div id="friendChallengeChoices" class="friend-choice-list"></div>
-                    <button type="button" id="createFriendChallenge" class="primary-button" disabled>Start 90-day group match</button>
-                </div>
-
-                <div class="page-card page-gap">
-                    <span class="eyebrow">YOUR MATCHES</span>
-                    <h2>Progress leaderboard</h2>
-                    <div id="friendChallenges" class="friend-challenges"></div>
                 </div>
             </div>
         </section>
@@ -680,7 +742,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script src="qrcode.js"></script>
-<script src="dashboard.js?v=140"></script>
+<script src="dashboard.js?v=141"></script>
 <script>
     if ("serviceWorker" in navigator && !window.LT_REDIRECTING && location.protocol !== "file:") {
         try {
