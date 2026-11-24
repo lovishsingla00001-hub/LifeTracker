@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#e9edf4">
+    <title>Privacy Policy · LifeTrack</title>
+    <link rel="icon" type="image/png" href="lifetrack-logo.png?v=2" media="(prefers-color-scheme: light)">
+    <link rel="icon" type="image/png" href="lifetrack-logo-dark.png?v=2" media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" href="lifetrack-logo-192.png?v=2">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .privacy-body { min-height: 100vh; padding: 24px; }
+        .privacy-wrap { width: min(100%, 820px); margin: 0 auto; }
+        .privacy-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 0 24px; border-bottom: 1px solid var(--line); }
+        .privacy-brand { color: var(--text); font-size: 16px; font-weight: 800; text-decoration: none; }
+        .privacy-header a:last-child { color: var(--primary-strong); font-size: 13px; font-weight: 700; text-decoration: none; }
+        .privacy-main { padding: 36px 0 56px; }
+        .privacy-main .eyebrow { color: var(--primary-strong); font-size: 11px; font-weight: 800; }
+        .privacy-main h1 { margin: 8px 0; font-size: 32px; line-height: 1.2; }
+        .privacy-byline { margin: 12px 0 5px; color: var(--primary-strong); font-size: 14px; font-weight: 700; }
+        .privacy-date { margin: 0 0 28px; color: var(--muted); font-size: 13px; }
+        .privacy-main > p, .privacy-main li { color: var(--muted); font-size: 15px; line-height: 1.7; }
+        .privacy-main section { padding: 20px 0; border-top: 1px solid var(--line); }
+        .privacy-main h2 { margin: 0 0 8px; font-size: 18px; }
+        .privacy-main section p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+        .privacy-main ul { margin: 8px 0 0; padding-left: 22px; }
+        .privacy-main li + li { margin-top: 6px; }
+        .privacy-main a { color: var(--primary-strong); overflow-wrap: anywhere; }
+        .creator-section { margin-top: 52px; padding-top: 22px; border-top: 1px solid var(--line); }
+        .creator-section p { max-width: 680px; margin: 0 0 12px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+        .creator-section a { font-size: 13px; font-weight: 700; text-decoration: none; }
+        .privacy-footer { padding-top: 16px; color: var(--muted); border-top: 1px solid var(--line); font-size: 12px; }
+        @media (max-width: 520px) {
+            .privacy-body { padding: 16px; }
+            .privacy-main { padding-top: 28px; }
+            .privacy-main h1 { font-size: 27px; }
+        }
+    </style>
+</head>
+<body class="privacy-body">
+    <div class="privacy-wrap">
+        <header class="privacy-header">
+            <a class="privacy-brand" href="./index.html">LifeTrack</a>
+            <a href="./index.html">Back to LifeTrack</a>
+        </header>
+
+        <main class="privacy-main">
+            <p class="eyebrow">PRIVACY</p>
+            <h1>LifeTrack Privacy Policy</h1>
+            <p class="privacy-byline">Made by Sonic</p>
+            <p class="privacy-date">Effective date: November 24, 2026</p>
+            <p>This policy explains what LifeTrack processes when you use its habit tracker, Google sign-in, Google Drive backup, and optional Android Health Connect or Apple Health connection in the native apps.</p>
+
+            <section>
+                <h2>Information LifeTrack processes</h2>
+                <ul>
+                    <li>Google sign-in provides your name, email address, profile photo, and account identifier so LifeTrack can identify your account.</li>
+                    <li>Tracker information can include habits, check-ins, goals, reading progress, fitness entries, and body-profile details that you enter.</li>
+                    <li>If you choose Connect health data in Additional features in the Android or iPhone app, LifeTrack asks the operating system for read-only access to available steps, sleep, and active-calorie records from Health Connect, or steps and sleep from Apple Health. Each Health Connect type is read independently; denying one does not block the others. Android continuous monitoring additionally requires Health Connect background access, notification permission, and Physical activity permission. It runs a foreground service that reads the phone's step counter and checks Health Connect about once a minute, with a persistent notification showing the latest count and sync status. The separate Exercise timer records only the elapsed duration you start and stop in LifeTrack. The optional Android Device Focus summary requires Android Usage Access. It reads only the aggregate time spent in other apps, not app names or activity details; the daily total is saved with fitness data and can sync to the user's private Google Drive app-data file. These permissions can be revoked in system settings. Android can stop background work; WorkManager fallback runs no more often than its 15-minute minimum. When Google Drive sync is connected, Android readings are sent through LifeTrack's authenticated Worker to your private Google Drive app-data file; the Worker does not retain those readings. Without a Google Drive session or network, readings remain queued on the phone until LifeTrack is opened. LifeTrack does not request health permissions during Google sign-in or read Health Connect data from the web app.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>How information is stored</h2>
+                <p>LifeTrack stores tracker information and AI chat history in the current app or browser. Health readings imported from Health Connect or Apple Health are saved as Fitness Today entries in that app. The Android app caches its dashboard for offline use after the first successful online load; tracker changes remain on-device until an authorized Google Drive sync can run online. The Android and iPhone apps keep separate on-device storage from Chrome or Safari. For Google sign-in accounts, LifeTrack also keeps tracker data, including imported fitness entries, and up to 48 recent AI chat messages in the private Google Drive app-data area of that same Google account to support syncing across devices. AI chat history is not included in manual backup downloads. Private AI notes, name/email accounts, and Guest accounts stay in the current app or browser and do not sync across devices.</p>
+            </section>
+
+            <section>
+                <h2>Optional background reminders</h2>
+                <p>If you enable browser push reminders, LifeTrack sends your reminder names, times, time zone, and browser push subscription to its Cloudflare Worker and stores them in Cloudflare KV so reminders can be scheduled while the site is closed. Push messages are encrypted for your browser. The native Android app stores reminder schedules on your device and uses Android alarms; the iPhone app stores schedules on your device and uses iOS local notifications. These native reminder schedules are not sent to the Worker. The Android app also schedules one locally stored motivational message per day at a random time between 9 AM and 9 PM; it does not contact the Worker to generate or deliver that message. Removing your reminders or resetting LifeTrack removes the server-side browser schedule. Notifications depend on browser, device, network, and operating-system settings.</p>
+            </section>
+
+            <section>
+                <h2>Google services and sharing</h2>
+                <p>Google sign-in and Google Drive backup use Google services. LifeTrack does not request Google Fit or Google Health access. Health Connect and Apple Health access is read-only and controlled by the operating system; no health permission is requested until you choose to connect it in the native app settings. Android Usage Access is a separate optional special permission for the Device Focus aggregate and is never requested during sign-in. If advertising is enabled and required approvals and consent settings are configured, Google AdMob may serve banner ads in the Android app, and Google AdSense may serve display ads on the public download page and, for users whose server-verified plan is Free, in the web/PWA dashboard. Active Pro plans suppress ads. Those services may process device or advertising identifiers, IP address, and ad interactions under Google's privacy policies and the consent choices available in your region. Free Google-account users may optionally watch one rewarded Android ad every seven days for temporary AI credits. Google's signed server callback is used to verify a reward; unverified ads earn no credits, and verified reward credits expire after 24 hours. LifeTrack does not send habit, health, fitness, or other tracker entries to Google for ad targeting. Ads are not shown in the iPhone native app. Google's handling of information is governed by <a href="https://policies.google.com/privacy">Google's Privacy Policy</a>.</p>
+            </section>
+
+            <section>
+                <h2>Optional AI assistant</h2>
+                <p>When you use the AI assistant, LifeTrack sends your messages, recent chat, habit names and today's check-in status, goal summaries, recent check-in counts, limited plan preferences, today's fitness log (steps, water, sleep, focus minutes, and mood), reading progress, and saved reminder names and times to its Cloudflare Worker and Groq to generate a reply and optional requested actions. Body measurements and private AI notes are not included in the tracker summary. AI changes are shown for your review and are only applied after you choose Apply changes; reminder changes may also ask for notification permission and update the scheduled reminder service. Groq processes assistant requests under its <a href="https://groq.com/privacy-policy/">Privacy Policy</a>.</p>
+            </section>
+
+            <section>
+                <h2>Optional voice input</h2>
+                <p>If your browser's speech service is unavailable, you can use the microphone fallback. After you tap the microphone and stop the recording, LifeTrack sends that audio through its Cloudflare Worker to Groq for transcription. Review the returned text before sending it to the assistant. LifeTrack does not save microphone recordings; audio is processed by Groq according to its <a href="https://groq.com/privacy-policy/">Privacy Policy</a>.</p>
+            </section>
+
+            <section>
+                <h2>Tokens and permissions</h2>
+                <p>Your LifeTrack account name, email, and account identifier are remembered in this browser until you log out or clear this site's browser data. Short-lived Google access tokens are held in temporary browser session storage. To refresh them without repeated sign-in, LifeTrack stores a refresh token encrypted in its private Cloudflare Worker KV namespace and uses a Secure, HttpOnly, SameSite cookie for a rolling 30-day session. LifeTrack does not store your Google password or expose the refresh token to browser code. You can stop future Google access through your Google Account security settings. Information already stored in this browser or in Google Drive may need to be removed separately.</p>
+            </section>
+
+            <section>
+                <h2>Data control and contact</h2>
+                <p>You can clear browser-stored LifeTrack data from the app or your browser settings. To ask a question about this policy or request help with data stored in Google Drive, contact <a href="mailto:surajshukla22051@gmail.com">surajshukla22051@gmail.com</a>.</p>
+            </section>
+
+            <section class="creator-section">
+                <h2>About the creator</h2>
+                <p>LifeTrack is an independently built personal habit and wellness tracker created by Sonic. The project brings daily routines, goals, and progress into one simple space. Explore other work on GitHub.</p>
+                <a href="https://github.com/surajshukla22051-prog" target="_blank" rel="noopener noreferrer">Visit Sonic on GitHub</a>
+            </section>
+
+            <footer class="privacy-footer">LifeTrack · Personal habit and wellness tracking · <a href="./terms.html">Terms of Service</a></footer>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>LifeTrack Dashboard | Habit, Goal &amp; Wellness Tracker</title>
+    <meta name="description" content="LifeTrack by Sonic is a free personal dashboard for tracking daily habits, goals, reading, focus, fitness and wellness progress.">
+    <meta name="author" content="Sonic">
+    <link rel="canonical" href="https://lifetrack.surajshukla22051.workers.dev/dashboard">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="LifeTrack">
+    <meta property="og:title" content="LifeTrack Dashboard | Habit &amp; Wellness Tracker">
+    <meta property="og:description" content="Track habits, goals, reading, focus and wellness in LifeTrack, created by Sonic.">
+    <meta property="og:url" content="https://lifetrack.surajshukla22051.workers.dev/dashboard">
+    <meta name="twitter:card" content="summary">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "LifeTrack",
+            "url": "https://lifetrack.surajshukla22051.workers.dev/dashboard",
+            "description": "A personal habit, goal, reading, focus and wellness tracker.",
+            "applicationCategory": "HealthApplication",
+            "operatingSystem": "Web, Android",
+            "author": {
+                "@type": "Organization",
+                "name": "Sonic"
+            }
+        }
+    </script>
+    <meta name="theme-color" content="#f1f3ff">
+    <meta name="color-scheme" content="light dark">
+    <script src="config.js"></script>
+    <script src="app-redirect.js"></script>
+    <script src="adsense.js" defer></script>
+    <link rel="apple-touch-icon" href="lifetrack-logo-192.png?v=2">
+    <link rel="manifest" href="manifest.webmanifest">
+    <script src="pwa.js" defer></script>
+    <link rel="icon" type="image/png" href="lifetrack-logo.png?v=2" sizes="120x120" media="(prefers-color-scheme: light)" data-theme-icon="light">
+    <link rel="icon" type="image/png" href="lifetrack-logo-dark.png?v=2" sizes="120x120" media="(prefers-color-scheme: dark)" data-theme-icon="dark">
+    <link rel="stylesheet" href="dashboard.css?v=84">
+</head>
+<body>
+<div id="pullRefreshIndicator" class="pull-refresh-indicator" role="status" aria-live="polite" aria-hidden="true">
+    <span class="pull-refresh-glyph" aria-hidden="true">↓</span>
+    <span id="pullRefreshLabel">Pull to refresh</span>
+</div>
+<div class="app">
+    <aside class="sidebar" aria-label="Main navigation">
+        <div class="logo" id="logoArea">
+            <button type="button" class="logo-btn" id="logoBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="profileMenu" title="Profile &amp; account">
+                <span class="logo-box"><img class="logo-image-light" src="lifetrack-logo.png" alt="LifeTrack logo"><img class="logo-image-dark" src="lifetrack-logo-dark.png" alt=""></span>
+            </button>
+            <div class="logo-text"><h2>LifeTrack</h2><p>Build your life.</p></div>
+        </div>
+        <nav class="navigation" aria-label="Sections">
+            <button type="button" class="nav-item active" data-section="dashboard" aria-current="page" title="Dashboard"><span class="nav-icon">📊</span><span class="nav-text">Dashboard</span></button>
+            <button type="button" class="nav-item" data-section="habits" title="Habits"><span class="nav-icon">✓</span><span class="nav-text">Habits</span></button>
+            <button type="button" class="nav-item" data-section="goals" title="Goals"><span class="nav-icon">🎯</span><span class="nav-text">Goals</span></button>
+            <button type="button" class="nav-item" data-section="analytics" title="Analytics"><span class="nav-icon">📈</span><span class="nav-text">Analytics</span></button>
+        </nav>
+        <div class="sidebar-bottom">
+            <button type="button" id="supportSidebarTrigger" class="support-sidebar-trigger" aria-label="Voluntarily support LifeTrack">
+                <span class="support-sidebar-icon" aria-hidden="true">₹</span>
+                <span class="support-sidebar-copy">
+                    <span class="support-sidebar-kicker">OPTIONAL SUPPORT</span>
+                    <strong>Support LifeTrack</strong>
+                    <span>Buy Me a Coffee · Always voluntary</span>
+                </span>
+            </button>
+            <button type="button" id="themeToggle" class="theme-button" aria-pressed="true" title="Change appearance"><span class="nav-icon">☀</span><span class="nav-text">Light Mode</span></button>
+        </div>
+    </aside>
+    <main class="main-content">
+        <section id="androidUpdateNotice" class="android-update-notice" aria-live="polite" hidden>
+            <div>
+                <strong id="androidUpdateTitle">LifeTrack Android update available</strong>
+                <p id="androidUpdateMessage">Open the download in your browser, then confirm Install to update LifeTrack.</p>
+            </div>
+            <a id="androidUpdateDownload" href="https://lifetrack-android-update.surajshukla22051.workers.dev/">Download update</a>
+        </section>
+        <header class="topbar">
+            <div>
+                <span class="eyebrow">PERSONAL DEVELOPMENT SYSTEM</span>
+                <h1 id="pageTitle">Dashboard</h1>
+            </div>
+
+            <div class="top-actions">
+                <select id="monthSelect">
+                    <option>January</option>
+                    <option>February</option>
+                    <option>March</option>
+                    <option>April</option>
+                    <option>May</option>
+                    <option>June</option>
+                    <option>July</option>
+                    <option>August</option>
+                    <option>September</option>
+                    <option>October</option>
+                    <option>November</option>
+                    <option>December</option>
+                </select>
+
+                <select id="yearSelect">
+                    <option>2025</option>
+                    <option>2026</option>
+                    <option>2027</option>
+                    <option>2028</option>
+                    <option>2029</option>
+                </select>
+
+                <button type="button" class="user-info user-chip" id="userChip" aria-haspopup="menu" aria-controls="profileMenu" title="Profile &amp; account">
+                    <span id="userName" class="user-name">User</span>
+                    <span id="profileLetter" class="profile">U</span>
+                </button>
+                <div class="dashboard-settings">
+                    <button type="button" id="dashboardSettingsTrigger" class="dashboard-settings-trigger" aria-label="Additional features" title="Additional features" aria-expanded="false" aria-controls="dashboardSettingsMenu">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="m19.4 15 .1.1a1.8 1.8 0 1 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3.1 1.3v.2a1.8 1.8 0 1 1-3.6 0v-.2a1.8 1.8 0 0 0-3.1-1.3l-.1.1a1.8 1.8 0 1 1-2.5-2.5l.1-.1a1.8 1.8 0 0 0-1.3-3.1h-.2a1.8 1.8 0 1 1 0-3.6h.2a1.8 1.8 0 0 0 1.3-3.1l-.1-.1a1.8 1.8 0 1 1 2.5-2.5l.1.1a1.8 1.8 0 0 0 3.1-1.3v-.2a1.8 1.8 0 1 1 3.6 0v.2a1.8 1.8 0 0 0 3.1 1.3l.1-.1a1.8 1.8 0 1 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 1.3 3.1h.2a1.8 1.8 0 1 1 0 3.6h-.2a1.8 1.8 0 0 0-1.3 3.1Z"></path></svg>
+                    </button>
+                    <section id="dashboardSettingsMenu" class="dashboard-settings-menu" aria-labelledby="dashboardSettingsTitle" hidden>
+                        <header><strong id="dashboardSettingsTitle">Additional features</strong><button type="button" id="dashboardSettingsClose" aria-label="Close additional features">×</button></header>
+                        <fieldset id="androidThemeSettings" class="android-theme-settings">
+                            <legend>Appearance</legend>
+                            <div role="group" aria-label="Choose appearance">
+                                <button type="button" class="android-theme-option" data-theme-mode="light" aria-pressed="false"><span aria-hidden="true">☀</span> Light</button>
+                                <button type="button" class="android-theme-option" data-theme-mode="dark" aria-pressed="false"><span aria-hidden="true">☾</span> Dark</button>
+                                <button type="button" class="android-theme-option" data-theme-mode="system" aria-pressed="false"><span aria-hidden="true">◐</span> Default</button>
+                            </div>
+                        </fieldset>
+                        <button type="button" id="adsPrivacyOptions" class="ai-reminder-enable" hidden>Advertising privacy options</button>
+                        <section id="rewardedAiSettings" class="native-health-settings" hidden>
+                            <strong id="rewardedAiTitle">AI credit rewards</strong>
+                            <p id="rewardedAiDescription" class="ai-privacy-note">LifeTrack AI credit availability.</p>
+                            <div id="webAiUsageMeter" class="web-ai-usage-meter" role="progressbar" aria-label="Daily AI credits" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden>
+                                <span id="webAiUsageProgress"></span>
+                            </div>
+                            <p id="webProUpgrade" class="ai-privacy-note" hidden>LifeTrack Pro includes a larger daily AI allowance and removes ads.</p>
+                            <button type="button" id="watchRewardedAd" class="ai-reminder-enable" disabled hidden>Watch ad for AI credits</button>
+                            <small id="rewardedAiStatus" class="ai-status" aria-live="polite"></small>
+                        </section>
+                        <section id="ownerAdControls" class="native-health-settings" hidden>
+                            <strong>Global ad controls · all users</strong>
+                            <p class="ai-privacy-note">These settings are saved app-wide, so users do not need to turn ads on individually. Ads are requested only when AdMob setup is ready and each user's consent allows it. This control stays owner-only.</p>
+                            <label><input type="checkbox" id="ownerAdsEnabled"> Enable configured AdMob ads</label>
+                            <label><input type="checkbox" id="ownerRewardedAdsEnabled"> Enable rewarded AI credits</label>
+                            <button type="button" id="saveOwnerAdControls" class="ai-reminder-enable">Save ad settings</button>
+                            <small id="ownerAdControlsStatus" class="ai-status" aria-live="polite"></small>
+                        </section>
+                        <section id="nativeHealthSettings" class="native-health-settings" aria-labelledby="nativeHealthTitle" hidden>
+                            <strong id="nativeHealthTitle">Health data</strong>
+                            <p class="ai-privacy-note">Automatic Health Connect reads run through Android background scheduling (normally no more often than every 15 minutes; Android may delay them). LifeTrack also refreshes when opened. Drive uploads wait for internet and sign-in. Android may pause background work after Force stop.</p>
+                            <button type="button" id="nativeHealthConnect" class="ai-reminder-enable">Connect health data</button>
+                            <button type="button" id="nativeHealthAutoSync" class="ai-reminder-enable" aria-pressed="false">Turn automatic sync on</button>
+                            <small id="nativeHealthBackgroundStatus" class="ai-status" aria-live="polite"></small>
+                            <small id="nativeHealthPermissionStatus" class="ai-status" aria-live="polite"></small>
+                            <small id="nativeHealthLastSuccess" class="ai-status"></small>
+                            <small id="nativeHealthNextSync" class="ai-status"></small>
+                            <small id="nativeHealthLatestData" class="ai-status"></small>
+                            <small id="nativeHealthStatus" class="ai-status" aria-live="polite">Health access is off until you connect it here.</small>
+                        </section>
+                        <section id="deviceFocusSettings" class="native-health-settings" aria-labelledby="deviceFocusTitle" hidden>
+                            <strong id="deviceFocusTitle">Device Focus</strong>
+                            <p class="ai-privacy-note">Reads only the total time spent in other apps today—not app names or activity details. The daily minute total is saved with your LifeTrack fitness data and syncs through your existing Google Drive connection.</p>
+                            <button type="button" id="deviceFocusPermission" class="ai-reminder-enable">Allow device usage access</button>
+                            <small id="deviceFocusStatus" class="ai-status" aria-live="polite"></small>
+                        </section>
+                        <p class="ai-privacy-note">Notification tests and Android background reminders. Background delivery depends on device permissions and settings.</p>
+                        <button type="button" id="aiReminderEnable" class="ai-reminder-enable">Enable background notifications</button>
+                        <button type="button" id="aiReminderDisplayTest" class="ai-reminder-enable">Test Android notification display</button>
+                        <button type="button" id="aiReminderAlarmTest" class="ai-reminder-enable" hidden>Test alarm while app is closed (1 min)</button>
+                        <button type="button" id="aiReminderTest" class="ai-reminder-enable" disabled>Send test notification</button>
+                        <small id="aiReminderStatus" class="ai-status ai-reminder-status" aria-live="polite">Add a reminder and enable notifications to receive reminders while the app is closed.</small>
+                        <div id="aiReminderEmptyState" aria-live="polite"></div>
+                    </section>
+                </div>
+            </div>
+        </header>
+
+        <section id="dashboard" class="section active-section">
+            <section id="dashboardAdContainer" class="dashboard-ad" aria-label="Advertisement" hidden>
+                <p class="dashboard-ad-label">Advertisement</p>
+                <ins id="dashboardAdSlot" class="adsbygoogle"
+                    style="display:block"
+                    data-ad-format="auto"
+                    data-full-width-responsive="true"></ins>
+            </section>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-title">NUMBER OF HABITS</span>
+                    <div class="habit-score-overview">
+                        <div class="habit-count-metric">
+                            <h2 id="habitCount">0</h2>
+                            <p id="habitCompletionToday" aria-live="polite">0/0 completed today</p>
+                        </div>
+                        <div class="life-score-metric">
+                            <span class="stat-title life-score-title">DAILY LIFE SCORE</span>
+                            <div class="life-score-value"><h2 id="lifeScoreValue">—</h2><span>/100</span></div>
+                        </div>
+                    </div>
+                    <div class="life-score-summary-row">
+                        <p id="lifeScoreSummary" aria-live="polite">Based on today's logged data.</p>
+                        <button type="button" id="lifeScoreDetailsButton" class="life-score-open-button" aria-haspopup="dialog" aria-controls="lifeScoreDialog">Details</button>
+                    </div>
+                    <div id="habitLegend" class="habit-legend"></div>
+                </div>
+
+                <div class="stat-card">
+                    <span class="stat-title">COMPLETED HABITS</span>
+                    <h2 id="completedCount">0</h2>
+                    <p>This month</p>
+                    <div id="completedSpark" class="spark-wrap"></div>
+                    <div id="completedChips" class="chip-row"></div>
+                </div>
+
+                <div class="stat-card progress-card">
+                    <span class="stat-title">OVERALL PROGRESS</span>
+                    <div id="progressGauge" class="gauge-wrap"></div>
+                    <p id="progressFeedback" class="gauge-feedback">Keep building momentum</p>
+                </div>
+
+            </div>
+
+            <dialog id="lifeScoreDialog" class="life-score-dialog" aria-labelledby="lifeScoreDialogTitle">
+                <header class="life-score-dialog-header">
+                    <div><span class="eyebrow">DAILY LIFE SCORE</span><h2 id="lifeScoreDialogTitle">Score details</h2></div>
+                    <button type="button" id="lifeScoreDialogClose" class="life-score-dialog-close" aria-label="Close score details">×</button>
+                </header>
+                <section class="life-score-dialog-section" aria-labelledby="lifeScoreBreakdownTitle">
+                    <h3 id="lifeScoreBreakdownTitle">Score breakdown</h3>
+                    <div id="lifeScoreBreakdown" class="life-score-breakdown" aria-live="polite"></div>
+                </section>
+                <details class="life-score-details">
+                    <summary>How it's calculated</summary>
+                    <p>A weighted average: habits use today's check-ins; goals use progress toward this month's targets; focus uses completed LifeTrack minutes against 30 minutes; wellness averages available steps, water, sleep, and mood against their targets. A daily task counts only when completed. Missing categories are omitted, not scored as zero. Exercise time is not scored, so skipping a workout on a rest day does not lower the score.</p>
+                </details>
+                <details class="life-score-details life-score-settings">
+                    <summary>Adjust category weights</summary>
+                    <p>These are relative priorities. The score rebalances over categories that have data. Weights stay on this device for this account.</p>
+                    <label for="lifeScoreWeightHabits"><span>Habits <output id="lifeScoreWeightHabitsValue">30%</output></span><input id="lifeScoreWeightHabits" data-score-weight="habits" type="range" min="0" max="100" step="5" value="30"></label>
+                    <label for="lifeScoreWeightGoals"><span>Goals <output id="lifeScoreWeightGoalsValue">25%</output></span><input id="lifeScoreWeightGoals" data-score-weight="goals" type="range" min="0" max="100" step="5" value="25"></label>
+                    <label for="lifeScoreWeightFocus"><span>Focus <output id="lifeScoreWeightFocusValue">20%</output></span><input id="lifeScoreWeightFocus" data-score-weight="focus" type="range" min="0" max="100" step="5" value="20"></label>
+                    <label for="lifeScoreWeightWellness"><span>Wellness <output id="lifeScoreWeightWellnessValue">15%</output></span><input id="lifeScoreWeightWellness" data-score-weight="wellness" type="range" min="0" max="100" step="5" value="15"></label>
+                    <label for="lifeScoreWeightTask"><span>Daily task <output id="lifeScoreWeightTaskValue">10%</output></span><input id="lifeScoreWeightTask" data-score-weight="task" type="range" min="0" max="100" step="5" value="10"></label>
+                </details>
+            </dialog>
+
+            <div class="main-grid">
+                <div class="panel habit-panel">
+                    <div class="panel-header">
+                        <div>
+                            <span class="eyebrow">CONSISTENCY</span>
+                            <h2>Habit Tracker</h2>
+                        </div>
+                        <button type="button" id="resetBtn" class="secondary-button">Reset Month</button>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="habit-table">
+                            <thead id="calendarHead"></thead>
+                            <tbody id="habitBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel streak-panel">
+                    <div class="panel-header"><div><span class="eyebrow">THIS MONTH · STREAKS</span><h2>Current Streaks</h2></div></div>
+                    <div id="streakList" class="streak-list"></div>
+                </div>
+            </div>
+
+            <div class="bottom-grid">
+                <div class="panel completion-panel">
+                    <div class="panel-header">
+                        <div>
+                            <span class="eyebrow">PERFORMANCE</span>
+                            <h2>Daily Completion</h2>
+                        </div>
+                    </div>
+                    <div id="completionChart" class="chart-svg-wrap"></div>
+                    <div id="completionChips" class="chip-row"></div>
+                    <h3 class="sub-head">Average by weekday</h3>
+                    <div id="weekdayBars" class="wd-bars"></div>
+                    <section id="exerciseProgress" class="exercise-progress" aria-labelledby="exerciseProgressTitle" hidden>
+                        <h3 id="exerciseProgressTitle" class="exercise-progress-title">Daily Exercise</h3>
+                        <div id="exerciseChart" class="chart-svg-wrap"></div>
+                        <div id="exerciseChartDetails" hidden>
+                            <div id="exerciseChartChips" class="chip-row"></div>
+                            <h3 class="sub-head">Exercise average by weekday</h3>
+                            <div id="exerciseWeekdayBars" class="wd-bars"></div>
+                        </div>
+                    </section>
+                    <div class="focus-session" id="focusSession">
+                        <div class="focus-session-head"><div><span class="eyebrow">FOCUS · ANDROID + PC</span><h3>Focus Session</h3></div><div class="focus-session-tools"><button type="button" class="focus-sound-toggle" id="focusSoundToggle" aria-label="Mute focus completion sound" aria-pressed="true" title="Mute focus completion sound">🔊</button><span id="focusState" class="focus-state">Ready</span></div></div>
+                        <div class="focus-session-main"><output id="focusClock" class="focus-clock" aria-live="polite">25:00</output><div class="focus-length" title="Choose a duration from 1 minute to 24 hours"><label><input id="focusHours" type="number" min="0" max="24" step="1" value="0" inputmode="numeric" aria-label="Focus duration hours"><span>hr</span></label><b aria-hidden="true">:</b><label><input id="focusMinutes" type="number" min="0" max="59" step="1" value="25" inputmode="numeric" aria-label="Focus duration minutes"><span>min</span></label></div></div>
+                        <div class="focus-session-actions"><button type="button" class="primary-button" id="focusToggle">Start</button><button type="button" class="secondary-button" id="focusReset">Reset</button></div>
+                        <small id="focusSummary" class="focus-summary">0 sessions · 0 minutes focused today</small>
+                    </div>
+                </div>
+
+                <div class="panel reminder-panel">
+                    <div class="panel-header">
+                        <div>
+                            <span class="eyebrow">DAILY REMINDER</span>
+                            <h2>Daily Body &amp; Mind Plan</h2>
+                        </div>
+                        <button type="button" id="bodyEditBtn" class="secondary-button">Edit Profile</button>
+                    </div>
+                    <div id="dailyReminder" class="daily-reminder"></div>
+                </div>
+            </div>
+
+            <div class="trio-grid">
+                <div class="panel">
+                    <div class="panel-header"><div><span class="eyebrow">THIS MONTH</span><h2>Habit Balance</h2></div></div>
+                    <div id="habitRadar"></div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><div><span class="eyebrow">LAST 7 DAYS</span><h2>Life Balance</h2></div></div>
+                    <div id="lifeRadar"></div>
+                    <div id="lifeLegend" class="legend-grid"></div>
+                </div>
+                <div class="panel analysis-panel">
+                    <div class="panel-header">
+                        <div>
+                            <span class="eyebrow">ANALYSIS</span>
+                            <h2>Goal vs Progress</h2>
+                        </div>
+                    </div>
+                    <div id="goalAnalysis" class="goal-analysis"></div>
+                    <div id="weekStrip" class="week-strip"></div>
+                </div>
+            </div>
+
+            <div class="duo-grid">
+                <div class="panel fit-panel">
+                    <div class="panel-header">
+                        <div><span class="eyebrow">BODY &amp; ACTIVITY</span><h2>Fitness Today</h2></div>
+                        <div id="fitActions" class="fit-actions"></div>
+                    </div>
+                    <div id="fitBody"></div>
+                    <div id="todayTaskCard" class="today-task-card"></div>
+                </div>
+                <div class="panel achievement-panel">
+                    <div class="panel-header"><div><span class="eyebrow">REWARDS</span><h2>Achievements</h2></div></div>
+                    <div id="badgeGrid" class="badge-grid"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="tasks" class="section">
+            <div class="page-card task-page-card">
+                <div class="task-page-heading">
+                    <div><span class="eyebrow">YOUR DAILY WILD CARD</span><h2>Today's Task</h2></div>
+                    <span class="task-pool-chip">70,000+ challenges</span>
+                </div>
+                <div id="dailyTaskDetail"></div>
+                <p class="task-safety-note">Keep every challenge safe and comfortable for you. Skip anything that doesn't fit your situation; no posting or sharing is required.</p>
+            </div>
+        </section>
+
+        <section id="habits" class="section">
+            <div class="page-card">
+                <span class="eyebrow">YOUR SYSTEM</span>
+                <h2>Build Your Habits</h2>
+                <p>Add or remove habits. Hold and drag a habit name in the tracker to reorder it, or double-click the name and use the up/down arrow keys. Double-click a name here to edit it.</p>
+
+                <div class="add-habit">
+                    <input id="newHabitInput" type="text" placeholder="Example: Meditation" autocomplete="off">
+                    <button type="button" id="addHabitBtn" class="primary-button">Add Habit</button>
+                </div>
+
+                <div id="habitManageList" class="habit-cards"></div>
+            </div>
+
+            <div class="duo-grid page-gap">
+                <div class="page-card">
+                    <span class="eyebrow">SHARE OF EFFORT</span>
+                    <h2>Where your check-ins go</h2>
+                    <div id="habitDonut"></div>
+                </div>
+                <div class="page-card">
+                    <span class="eyebrow">THIS MONTH</span>
+                    <h2>Habit shape</h2>
+                    <div id="habitRadar2"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="goals" class="section">
+            <div class="page-card">
+                <span class="eyebrow">LONG-TERM PROGRESS</span>
+                <h2>Goals</h2>
+                <p>Create a habit from your goal or choose an existing one. Set its difficulty and monthly target; progress uses your real check-ins.</p>
+                <div id="readingGoalCard"></div>
+                <form id="goalForm" class="goal-form" novalidate>
+                    <input id="goalName" type="text" maxlength="40" placeholder="Goal name, e.g. Run more" autocomplete="off">
+                    <select id="goalHabit" aria-label="Habit for this goal"></select>
+                    <select id="goalDifficulty" aria-label="Goal difficulty">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                    <label class="goal-range">Target <input id="goalTarget" type="range" min="10" max="100" step="5" value="70"><output id="goalTargetOut">70%</output></label>
+                    <button type="submit" class="primary-button">Add goal</button>
+                </form>
+                <div id="goalPageList" class="goal-grid"></div>
+            </div>
+
+            <div class="duo-grid page-gap">
+                <div class="page-card">
+                    <span class="eyebrow">ALL GOALS</span>
+                    <h2>Goal radar</h2>
+                    <div id="goalRadar"></div>
+                </div>
+                <div class="page-card">
+                    <span class="eyebrow">YEARLY VIEW</span>
+                    <h2>Goal progress by month</h2>
+                    <div id="goalYear"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="analytics" class="section">
+            <div class="page-card">
+                <div class="panel-header">
+                    <div><span class="eyebrow">YOUR DATA</span><h2>Analytics</h2></div>
+                    <div class="seg" id="analyticsSeg" role="group" aria-label="Analytics range">
+                        <button type="button" data-view="month" class="active">Monthly</button>
+                        <button type="button" data-view="year">Yearly</button>
+                    </div>
+                </div>
+
+                <div id="anMonth">
+                    <div id="anKpis" class="kpi-grid"></div>
+                    <h3 class="sub-head">Daily trend</h3>
+                    <div id="analyticsChart" class="line-chart-wrap"></div>
+                    <h3 class="sub-head">Fitness trends · daily</h3>
+                    <div id="fitTrend" class="fit-trend-grid"></div>
+                    <div class="duo-grid inner">
+                        <div><h3 class="sub-head">Calendar heatmap</h3><div id="heatMonth" class="box-soft"></div></div>
+                        <div><h3 class="sub-head">Habit balance</h3><div id="anRadar" class="box-soft"></div></div>
+                    </div>
+                </div>
+
+                <div id="anYear" hidden>
+                    <div id="anYearKpis" class="kpi-grid"></div>
+                    <h3 class="sub-head">Month by month</h3>
+                    <div id="yearlyChart"></div>
+                    <h3 class="sub-head">Fitness trends · daily average by month</h3>
+                    <div id="fitTrendYear" class="fit-trend-grid"></div>
+                    <h3 class="sub-head">Every day of the year</h3>
+                    <div id="heatYear" class="box-soft scroll-x"></div>
+                    <div class="duo-grid inner">
+                        <div><h3 class="sub-head">Habit by month</h3><div id="yearMatrix" class="box-soft scroll-x"></div></div>
+                        <div><h3 class="sub-head">Habit balance, whole year</h3><div id="yearRadar" class="box-soft"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="profileMenu" class="profile-menu" role="menu" hidden></div>
+<button type="button" id="aiLauncher" class="ai-launcher" aria-label="Open LifeTrack AI assistant" aria-expanded="false" aria-controls="aiPanel" title="LifeTrack AI assistant">
+    <img class="logo-image-light" src="lifetrack-logo.png" alt="">
+    <img class="logo-image-dark" src="lifetrack-logo-dark.png" alt="">
+    <span id="aiReminderBadge" class="ai-reminder-badge" aria-hidden="true" hidden></span>
+</button>
+<section id="aiPanel" class="ai-panel" role="dialog" aria-label="LifeTrack AI assistant" aria-modal="false" hidden>
+    <header class="ai-header">
+        <span class="ai-brand-icon" aria-hidden="true">
+            <img class="logo-image-light" src="lifetrack-logo.png" alt="">
+            <img class="logo-image-dark" src="lifetrack-logo-dark.png" alt="">
+        </span>
+        <div><strong>LifeTrack AI</strong><small>Full tracker controls · review before apply</small></div>
+        <button type="button" class="ai-install-trigger" id="aiInstallTrigger" aria-label="Install LifeTrack" aria-expanded="false" aria-controls="aiInstallMenu" title="Install LifeTrack">Install</button>
+        <button type="button" class="support-header-trigger" id="supportHeaderTrigger" aria-label="Support LifeTrack" title="Support LifeTrack" hidden>₹</button>
+        <button type="button" class="ai-close" id="aiClose" aria-label="Close AI assistant">×</button>
+    </header>
+    <div id="aiInstallMenu" class="ai-install-menu" role="group" aria-label="Install LifeTrack" hidden>
+        <strong>Install LifeTrack</strong>
+        <button type="button" class="ai-install-choice" id="aiInstallWindows">Windows · Chrome / Edge</button>
+        <button type="button" class="ai-install-choice" id="aiInstallMac">Mac · Chrome / Edge</button>
+        <a class="ai-install-choice" id="aiInstallMacLink" href="./install.html#mac">Mac · Install instructions</a>
+        <a class="ai-install-choice" id="aiInstallIphone" href="https://lifetrack.surajshukla22051.workers.dev/dashboard">iPhone · Open in Safari</a>
+        <a class="ai-install-choice" href="./install.html#iphone">iPhone · Add to Home Screen steps</a>
+        <a class="ai-install-choice" id="aiInstallAndroid" href="./lifetrack-android.apk" download="LifeTrack-Android.apk">Android · APK</a>
+        <a class="ai-install-choice" href="./install.html#mac">Mac installation instructions</a>
+        <small id="aiInstallStatus" role="status" aria-live="polite"></small>
+    </div>
+    <div class="ai-tabs" role="tablist" aria-label="Assistant views">
+        <button type="button" class="active" data-ai-tab="chat" role="tab" aria-selected="true">Chat</button>
+        <button type="button" data-ai-tab="notes" role="tab" aria-selected="false">Notes</button>
+        <button type="button" data-ai-tab="reminders" role="tab" aria-selected="false">Reminders</button>
+    </div>
+    <div id="aiChatView" class="ai-view" data-ai-view="chat">
+        <p class="ai-privacy-note" id="aiSetupNote"></p>
+        <div class="ai-coach-mode" role="group" aria-label="AI coach mode">
+            <span>Coach mode</span>
+            <select id="aiCoachMode" aria-label="Choose LifeTrack AI coach mode">
+                <option value="savage">Savage Coach</option>
+                <option value="calm">Calm Coach</option>
+            </select>
+        </div>
+        <div id="aiMessages" class="ai-messages" aria-live="polite"></div>
+        <div id="aiProposals" class="ai-proposals" hidden></div>
+        <form id="aiChatForm" class="ai-compose">
+            <textarea id="aiPrompt" rows="2" maxlength="1200" placeholder="Ask about habits, fitness, reading, focus, or goals…" aria-label="Message the AI assistant"></textarea>
+            <div class="ai-compose-actions">
+                <button type="button" id="aiMic" class="ai-icon-button" aria-label="Speak your message" aria-pressed="false" title="Voice input">🎙</button>
+                <button type="button" id="aiSpeak" class="ai-icon-button" aria-label="Read the latest reply aloud" title="Read aloud">🔊</button>
+                <select id="aiVoiceLanguage" class="ai-voice-language" aria-label="Voice language"><option value="auto">Auto</option><option value="hi-IN">हिन्दी</option><option value="en-US">English</option></select>
+                <button type="submit" id="aiSend" class="ai-send">Send</button>
+            </div>
+            <small id="aiVoiceStatus" class="ai-status" aria-live="polite"></small>
+        </form>
+    </div>
+    <div id="aiNotesView" class="ai-view" data-ai-view="notes" hidden>
+        <p class="ai-privacy-note">Notes stay on this device, unless you include them in a downloaded backup.</p>
+        <form id="aiNoteForm" class="ai-note-form">
+            <textarea id="aiNoteInput" rows="3" maxlength="1000" placeholder="Write a thought or save a note…" aria-label="New note"></textarea>
+            <button type="submit" class="ai-send">Save note</button>
+        </form>
+        <div id="aiNotesList" class="ai-notes-list"></div>
+    </div>
+    <div id="aiRemindersView" class="ai-view ai-reminders-view" data-ai-view="reminders" hidden>
+        <div class="ai-reminder-intro">
+            <strong>Your reminders</strong>
+        </div>
+        <div id="aiReminderList" class="ai-reminder-list" aria-live="polite"></div>
+        <form id="aiReminderForm" class="ai-reminder-form">
+            <label class="ai-reminder-field">Reminder name
+                <input id="aiReminderTitle" type="text" maxlength="60" placeholder="e.g. Drink some water" required>
+            </label>
+            <label class="ai-reminder-field">Reminder time
+                <input id="aiReminderTime" type="time" value="09:00" required>
+            </label>
+            <button type="submit" id="aiReminderSave" class="ai-send ai-reminder-save">＋ Add reminder</button>
+        </form>
+    </div>
+</section>
+<div id="modalRoot"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="qrcode.js"></script>
+<script src="dashboard.js?v=130"></script>
+<script>
+    if ("serviceWorker" in navigator && !window.LT_REDIRECTING && location.protocol !== "file:") {
+        try {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("./sw.js", { scope: "./" })
+                    .catch((error) => console.error("LifeTrack offline support could not start.", error));
+            });
+        } catch (error) {
+            console.error("LifeTrack offline support could not start.", error);
+        }
+    }
+</script>
+
+<footer class="lt-footer"><span><a class="footer-privacy" href="privacy.html" aria-label="Privacy policy">© <strong>LT Series</strong></a> | <a class="footer-privacy" href="terms.html">Terms of Service</a> | <span class="footer-credit">Made by Sonic</span></span></footer>
+</body>
+</html>
