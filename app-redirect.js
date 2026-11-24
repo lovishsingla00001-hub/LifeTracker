@@ -9,7 +9,11 @@
     let appUrl;
     try {
         appUrl = new URL(configuredUrl);
-        if (appUrl.protocol !== "https:") throw new Error("LifeTrack app URL must use HTTPS.");
+        const isLocalHttp = appUrl.protocol === "http:"
+            && ["localhost", "127.0.0.1"].includes(appUrl.hostname);
+        if (appUrl.protocol !== "https:" && !isLocalHttp) {
+            throw new Error("LifeTrack app URL must use HTTPS.");
+        }
     } catch (error) {
         console.error("LifeTrack app URL is invalid.", error);
         return;

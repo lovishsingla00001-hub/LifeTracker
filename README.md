@@ -1,32 +1,28 @@
-# LifeTrack
+# LifeTrack local development
 
-A LifeTrack habit-tracking dashboard served by Cloudflare Workers, with GitHub
-Pages kept as a redirect/entry point.
+This checkout is configured for local development. Browser app and API URLs
+stay on the current origin; there is no redirect to a deployed LifeTrack site.
+For the complete app, run the local Worker rather than VS Code Live Server,
+which only serves static files and cannot provide the API or local D1 database.
 
-## Publish LifeTrack
+## Run locally on Windows
 
-1. Create or use the GitHub repository [LT-lifetracker](https://github.com/surajshukla22051-prog/LT-lifetracker).
-2. Upload the app source files to the repository root. Do **not** upload
-   `files/client_secret_*.json`, `files/*.jks`, or `worker/.wrangler/`; keep
-   client secrets, signing keys, and local Cloudflare state private.
-3. In **Settings → Pages**, choose **Deploy from a branch**.
-4. Select the `main` branch and `/ (root)`, then save.
-5. The GitHub Pages URL stays as an entry point and redirects users to the
-   same-origin Cloudflare app required for persistent, secure Google sessions.
+Install Node.js 22 or newer. From the repository root, open PowerShell and run:
 
-[Open LifeTrack](https://surajshukla22051-prog.github.io/LT-lifetracker/)
+```powershell
+Set-Location worker
+npm ci
+npx wrangler d1 migrations apply lifetrack-monetization --local --config wrangler.toml
+npm run dev:local
+```
 
-The primary app URL is `https://lifetrack.surajshukla22051.workers.dev/`.
-Deploy the Worker and configure its secrets and auth KV namespace (instructions
-below) before enabling the redirect in `config.js`.
-The former `https://lifetrack-ai.surajshukla22051.workers.dev/` URL is kept as
-a compatibility redirect to the primary app. Deploy it separately from the
-`worker` directory with `npx wrangler deploy --config wrangler.legacy-redirect.toml`.
+Open `http://127.0.0.1:8000/`. Each teammate should run these commands on their
+own checkout; `localhost` is private to the computer that starts the server.
+The app uses local D1/KV state under `worker/.wrangler/`. Local migration
+commands include `--local` and do not modify the production database.
 
-The LifeTrack logo is configured as the site favicon, phone home-screen icon,
-and installable web-app icon through `manifest.webmanifest`.
-The public Privacy Policy and Terms of Service are available in `privacy.html`
-and `terms.html`.
+Do not run `wrangler deploy` for this local workflow. Keep `worker/.dev.vars`,
+`worker/.wrangler/`, OAuth secrets, and signing keys out of Git.
 
 ## LifeTrack AI V2.0 development
 

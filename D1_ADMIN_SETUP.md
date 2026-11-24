@@ -22,9 +22,9 @@ node --test index.test.mjs user-admin.test.mjs
 npm run dev:local
 ```
 
-Open `http://127.0.0.1:8787/` for the local app,
-`http://127.0.0.1:8787/dashboard` for the dashboard, or
-`http://127.0.0.1:8787/admin` for admin. Local browser requests use the local
+Open `http://127.0.0.1:8000/` for the local app,
+`http://127.0.0.1:8000/dashboard` for the dashboard, or
+`http://127.0.0.1:8000/admin` for admin. Local browser requests use the local
 Worker instead of the deployed Worker. The server binds to loopback only and
 is not exposed as a public/tunnel link.
 
@@ -36,11 +36,11 @@ ADMIN_EMAIL=your-verified-google-email@example.com
 ```
 
 Sign in using that verified Google account, then open
-`http://127.0.0.1:8787/admin`. Password accounts are not eligible for admin
+`http://127.0.0.1:8000/admin`. Password accounts are not eligible for admin
 access because LifeTrack does not currently verify email ownership for those
 accounts. Google OAuth credentials and the token-encryption key must also be
 configured locally to test the complete OAuth flow. For Google sign-in, add
-`http://127.0.0.1:8787/api/auth/google/callback` to the OAuth client's
+`http://127.0.0.1:8000/api/auth/google/callback` to the OAuth client's
 authorized redirect URIs. Local Apple sign-in also requires a provider setup
 that permits the local callback; otherwise use email/password or guest mode.
 
