@@ -1,5 +1,1 @@
-User-agent: *
-Allow: /
-Disallow: /api/
-
-Sitemap: https://lifetrack.surajshukla22051.workers.dev/sitemap.xml
+33
